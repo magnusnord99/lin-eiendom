@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lin-eiendom",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["/Users/magnusnordmo/LIN_eiendom/start-dev.sh"],
+      "port": 3000
+    }
+  ]
+}
