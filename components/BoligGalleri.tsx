@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { ImageOff, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BoligGalleriProps {
   bilder: string[];
@@ -16,9 +17,7 @@ export default function BoligGalleri({ bilder, tittel }: BoligGalleriProps) {
     return (
       <div className="aspect-[16/9] bg-[var(--surface)] rounded-xl border border-[var(--border)] flex items-center justify-center">
         <div className="text-center text-[var(--muted)]">
-          <svg className="w-16 h-16 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-          </svg>
+          <ImageOff className="w-14 h-14 mx-auto mb-3 opacity-25" strokeWidth={1} />
           <p className="text-sm">Ingen bilder</p>
         </div>
       </div>
@@ -70,7 +69,7 @@ export default function BoligGalleri({ bilder, tittel }: BoligGalleriProps) {
             className="absolute top-4 right-4 text-white bg-white/20 hover:bg-white/30 rounded-full w-10 h-10 flex items-center justify-center"
             onClick={() => setLysboks(false)}
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
           {bilder.length > 1 && (
             <>
@@ -78,13 +77,13 @@ export default function BoligGalleri({ bilder, tittel }: BoligGalleriProps) {
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-white/20 hover:bg-white/30 rounded-full w-10 h-10 flex items-center justify-center"
                 onClick={() => setValgt((valgt - 1 + bilder.length) % bilder.length)}
               >
-                ←
+                <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-white/20 hover:bg-white/30 rounded-full w-10 h-10 flex items-center justify-center"
                 onClick={() => setValgt((valgt + 1) % bilder.length)}
               >
-                →
+                <ChevronRight className="w-5 h-5" />
               </button>
             </>
           )}

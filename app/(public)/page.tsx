@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import BoligKort from "@/components/BoligKort";
+import { Home, Key, ClipboardList, MessageSquare } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -134,13 +135,15 @@ export default async function Home() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { icon: "🏠", tittel: "Salg", tekst: "Profesjonell hjelp gjennom hele salgsprosessen" },
-              { icon: "🔑", tittel: "Utleie", tekst: "Trygg og enkel utleie for leietaker og utleier" },
-              { icon: "📋", tittel: "Verdivurdering", tekst: "Gratis og uforpliktende verdivurdering" },
-              { icon: "💬", tittel: "Rådgivning", tekst: "Personlig rådgivning tilpasset dine behov" },
+              { icon: Home, tittel: "Salg", tekst: "Profesjonell hjelp gjennom hele salgsprosessen" },
+              { icon: Key, tittel: "Utleie", tekst: "Trygg og enkel utleie for leietaker og utleier" },
+              { icon: ClipboardList, tittel: "Verdivurdering", tekst: "Gratis og uforpliktende verdivurdering" },
+              { icon: MessageSquare, tittel: "Rådgivning", tekst: "Personlig rådgivning tilpasset dine behov" },
             ].map((item) => (
               <div key={item.tittel} className="bg-[var(--surface)] rounded-xl p-5 border border-[var(--border)]">
-                <div className="text-2xl mb-3">{item.icon}</div>
+                <div className="w-9 h-9 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center mb-3">
+                  <item.icon className="w-5 h-5 text-[var(--primary)]" strokeWidth={1.5} />
+                </div>
                 <h3 className="font-semibold text-sm text-[var(--foreground)] mb-1">{item.tittel}</h3>
                 <p className="text-[var(--muted)] text-xs leading-relaxed">{item.tekst}</p>
               </div>

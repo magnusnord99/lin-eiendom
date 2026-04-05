@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Plus, Loader2 } from "lucide-react";
 
 interface BoligData {
   id?: number;
@@ -203,12 +204,10 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
           <label className="aspect-square rounded-lg border-2 border-dashed border-[var(--border)] flex flex-col items-center justify-center cursor-pointer hover:border-[var(--primary)] hover:bg-[var(--surface)] transition-colors">
             <input type="file" accept="image/*" multiple className="hidden" onChange={lastOppBilde} disabled={lasterBilde} />
             {lasterBilde ? (
-              <span className="text-xs text-[var(--muted)]">Laster...</span>
+              <Loader2 className="w-5 h-5 text-[var(--muted)] animate-spin" />
             ) : (
               <>
-                <svg className="w-6 h-6 text-[var(--muted)] mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-                </svg>
+                <Plus className="w-5 h-5 text-[var(--muted)] mb-1" strokeWidth={1.5} />
                 <span className="text-xs text-[var(--muted)]">Last opp</span>
               </>
             )}
