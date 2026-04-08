@@ -50,7 +50,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-white/70">
               <li>post@lineiendom.no</li>
               <li>+47 22 33 44 55</li>
-              <li>Storgata 1, Oslo</li>
+              <li>Karl Johns Veg 12</li>
             </ul>
           </div>
         </div>
