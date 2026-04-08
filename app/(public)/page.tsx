@@ -71,29 +71,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Marquee stats */}
-      <section className="bg-[var(--foreground)] text-white overflow-hidden py-4">
-        <div className="flex whitespace-nowrap animate-marquee">
-          {[...Array(2)].map((_, i) => (
-            <div key={i} className="flex items-center gap-0 shrink-0">
-              {[
-                "200+ solgte boliger",
-                "150+ utleieboliger",
-                "15 års erfaring",
-                "98% fornøyde kunder",
-                "Karl Johns Veg 12",
-                "Alltid tilgjengelig",
-              ].map((item) => (
-                <span key={item} className="flex items-center gap-6 px-8 text-sm font-medium tracking-wide">
-                  <span className="w-1 h-1 rounded-full bg-blue-400 shrink-0" />
-                  {item}
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Tjenester – renset, uten ikoner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
