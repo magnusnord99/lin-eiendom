@@ -49,7 +49,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm text-white/70">
               <li>post@lineiendom.no</li>
-              <li>+47 22 33 44 55</li>
+              <li>+47 952 37 615</li>
               <li>Karl Johns Veg 12</li>
             </ul>
           </div>

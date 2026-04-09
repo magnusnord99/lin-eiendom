@@ -76,7 +76,7 @@ export default function SelgTilOssPage() {
 
             <div className="bg-[var(--surface)] rounded-xl border border-[var(--border)] p-6">
               <p className="text-xs font-semibold text-[var(--secondary)] uppercase tracking-wider mb-3">Foretrekker du å ringe?</p>
-              <p className="font-bold text-[var(--foreground)] text-lg mb-1">+47 22 33 44 55</p>
+              <p className="font-bold text-[var(--foreground)] text-lg mb-1">+47 952 37 615</p>
               <p className="text-[var(--muted)] text-sm">Tilgjengelig man–fre 08–17</p>
             </div>
           </div>

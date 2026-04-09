@@ -21,7 +21,7 @@ export default function KontaktPage() {
               <div className="space-y-5">
                 {[
                   { label: "Adresse", verdi: "Karl Johns Veg 12" },
-                  { label: "Telefon", verdi: "+47 22 33 44 55" },
+                  { label: "Telefon", verdi: "+47 952 37 615" },
                   { label: "E-post", verdi: "post@lineiendom.no" },
                   { label: "Åpningstider", verdi: "Man–Fre: 08:00–17:00" },
                 ].map((info) => (
