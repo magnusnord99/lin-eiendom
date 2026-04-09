@@ -16,8 +16,8 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-white/70 text-sm leading-relaxed">
-              Vi hjelper deg med å finne rett bolig – enten du vil kjøpe eller leie.
-              Lokal kunnskap, personlig service.
+              Vi kjøper boliger som trenger renovering, pusser dem opp og selger
+              eller leier dem ut. Karl Johns Veg 12.
             </p>
           </div>
 
@@ -28,8 +28,8 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm">
               {[
-                { href: "/salg", label: "Boliger til salgs" },
-                { href: "/leie", label: "Boliger til leie" },
+                { href: "/boliger", label: "Våre boliger" },
+                { href: "/selg-til-oss", label: "Selg til oss" },
                 { href: "/om-oss", label: "Om oss" },
                 { href: "/kontakt", label: "Kontakt" },
               ].map((link) => (

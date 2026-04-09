@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 const navLinks = [
-  { href: "/salg", label: "Boliger til salgs" },
-  { href: "/leie", label: "Boliger til leie" },
+  { href: "/boliger", label: "Boliger" },
+  { href: "/selg-til-oss", label: "Selg til oss" },
   { href: "/om-oss", label: "Om oss" },
   { href: "/kontakt", label: "Kontakt" },
 ];
@@ -50,10 +50,10 @@ export default function Navbar() {
           {/* CTA */}
           <div className="hidden md:block">
             <Link
-              href="/kontakt"
+              href="/selg-til-oss"
               className="bg-[var(--primary)] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[var(--primary-light)] transition-colors"
             >
-              Kontakt oss
+              Selg til oss
             </Link>
           </div>
 
@@ -85,11 +85,11 @@ export default function Navbar() {
               </Link>
             ))}
             <Link
-              href="/kontakt"
+              href="/selg-til-oss"
               onClick={() => setOpen(false)}
               className="block mt-2 bg-[var(--primary)] text-white px-4 py-2 rounded-md text-sm font-medium text-center"
             >
-              Kontakt oss
+              Selg til oss
             </Link>
           </div>
         )}

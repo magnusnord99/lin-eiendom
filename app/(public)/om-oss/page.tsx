@@ -2,26 +2,26 @@ const team = [
   {
     navn: "Øystein Nordmo",
     initialer: "ØN",
-    tittel: "Eiendomsmegler",
-    bio: "Lokal kunnskap og bred erfaring. Øystein sørger for at du alltid vet hva som skjer gjennom hele prosessen.",
+    tittel: "Advokat",
+    bio: "Øystein håndterer alle juridiske aspekter — fra due diligence og kontraktsforhandlinger til tinglysing. Du er alltid i trygge hender.",
   },
   {
     navn: "Magnus Nordmo",
     initialer: "MN",
-    tittel: "Eiendomsmegler",
-    bio: "Spesialist på boligsalg og verdivurdering. Magnus finner riktig kjøper til riktig pris.",
+    tittel: "Dataingeniør",
+    bio: "Magnus bygger systemene som gjør oss effektive — fra boligoversikt og analyse til interne verktøy som sparer tid og penger.",
   },
   {
     navn: "Oskar Røhnebækk",
     initialer: "OR",
-    tittel: "Eiendomsmegler",
-    bio: "Ekspert på utleie og forvaltning. Oskar hjelper deg med trygge leieforhold fra start til slutt.",
+    tittel: "Salg",
+    bio: "Oskar sørger for at ferdigrenoverte boliger selges raskt og til riktig pris. Han håndterer visninger, forhandlinger og oppgjør.",
   },
   {
     navn: "Simen Stensrud",
     initialer: "SS",
-    tittel: "Eiendomsmegler",
-    bio: "Ansvarlig for markedsføring og digitale kanaler. Simen sørger for at boligene dine når riktig kjøper.",
+    tittel: "Byggmester",
+    bio: "Simen leder alle oppussingsprosjekter. Med bred fagkompetanse sikrer han høy kvalitet, overholdelse av budsjett og fremdrift.",
   },
 ];
 
@@ -44,36 +44,37 @@ export default function OmOssPage() {
               className="animate-fade-up font-bold text-white leading-tight mb-6"
               style={{ fontSize: "clamp(2.2rem, 5vw, 4rem)" }}
             >
-              Et byrå bygget på
+              Vi ser verdien
               <br />
-              tillit og kunnskap.
+              der andre ser arbeid.
             </h1>
             <p className="animate-fade-up delay-200 text-white/70 text-lg leading-relaxed max-w-lg">
-              LIN Eiendom ble grunnlagt med én visjon: å gjøre bolighandel enkel, trygg og
-              personlig. Vi holder til på Karl Johns Veg 12.
+              LIN Eiendom kjøper boliger som trenger renovering, pusser dem opp og
+              selger eller leier dem ut. Med advokat, byggmester, selger og ingeniør
+              inhouse — gjør vi alt selv.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Verdier – uten ikoner */}
+      {/* Konsept */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[var(--border)] rounded-xl overflow-hidden border border-[var(--border)]">
           {[
             {
               nr: "01",
-              tittel: "Ærlighet",
-              tekst: "Vi gir deg ærlige råd, selv når det ikke er det du ønsker å høre. Din tillit er vår viktigste verdi.",
+              tittel: "Vi kjøper riktig",
+              tekst: "Vi søker aktivt etter objekter med potensial — boliger som er utdaterte, slitte eller trenger strukturell oppgradering.",
             },
             {
               nr: "02",
-              tittel: "Grundighet",
-              tekst: "Vi jobber nøye og detaljert i alle ledd – fra verdivurdering til kontraktssignering.",
+              tittel: "Vi renoverer grundig",
+              tekst: "Alt fra bad og kjøkken til tak, fasade og tekniske anlegg. Simen og hans team leverer håndverkskvalitet du merker.",
             },
             {
               nr: "03",
-              tittel: "Profesjonalitet",
-              tekst: "Alle i teamet er sertifiserte og har lang erfaring. Du er i trygge hender.",
+              tittel: "Vi skaper verdi",
+              tekst: "Ferdig renoverte boliger selges eller leies ut. Oskar sørger for riktig pris og rask prosess.",
             },
           ].map((v) => (
             <div key={v.tittel} className="bg-white p-8 lg:p-10">
@@ -113,7 +114,7 @@ export default function OmOssPage() {
                 </div>
                 <div className="p-5">
                   <h3 className="font-bold text-[var(--foreground)] text-sm">{person.navn}</h3>
-                  <p className="text-[var(--secondary)] text-xs font-medium mb-3">{person.tittel}</p>
+                  <p className="text-[var(--secondary)] text-xs font-semibold mb-3 uppercase tracking-wider">{person.tittel}</p>
                   <p className="text-[var(--muted)] text-xs leading-relaxed">{person.bio}</p>
                 </div>
               </div>
@@ -122,17 +123,25 @@ export default function OmOssPage() {
         </div>
       </section>
 
-      {/* Adresse */}
+      {/* Adresse + CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-4">Finn oss</p>
         <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2">Karl Johns Veg 12</h2>
         <p className="text-[var(--muted)] mb-8">Kontortid mandag–fredag, 08:00–17:00</p>
-        <a
-          href="/kontakt"
-          className="inline-block bg-[var(--primary)] text-white px-8 py-3 rounded-md font-semibold hover:bg-[var(--primary-light)] transition-colors text-sm"
-        >
-          Send oss en melding
-        </a>
+        <div className="flex justify-center gap-4 flex-wrap">
+          <a
+            href="/selg-til-oss"
+            className="inline-block bg-[var(--primary)] text-white px-8 py-3 rounded-md font-semibold hover:bg-[var(--primary-light)] transition-colors text-sm"
+          >
+            Selg til oss
+          </a>
+          <a
+            href="/kontakt"
+            className="inline-block border border-[var(--border)] text-[var(--foreground)] px-8 py-3 rounded-md font-semibold hover:bg-[var(--surface)] transition-colors text-sm"
+          >
+            Send en melding
+          </a>
+        </div>
       </section>
     </div>
   );

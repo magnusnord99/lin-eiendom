@@ -18,7 +18,6 @@ export default async function Home() {
     <>
       {/* Hero */}
       <section className="relative bg-[var(--primary)] text-white overflow-hidden min-h-[88vh] flex items-center">
-        {/* Dot grid pattern */}
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{
@@ -26,9 +25,7 @@ export default async function Home() {
             backgroundSize: "32px 32px",
           }}
         />
-        {/* Gradient overlay – bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[var(--primary)] to-transparent" />
-        {/* Large decorative number */}
         <div
           className="absolute right-0 top-1/2 -translate-y-1/2 text-white/[0.04] font-black select-none pointer-events-none leading-none animate-fade-in delay-500"
           style={{ fontSize: "clamp(200px, 28vw, 420px)" }}
@@ -38,73 +35,73 @@ export default async function Home() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-36 w-full">
           <p className="animate-slide-right text-white/50 text-xs font-semibold uppercase tracking-[0.25em] mb-6">
-            Karl Johns Veg 12 · Profesjonell eiendomsmegling
+            Karl Johns Veg 12 · Eiendomsutvikling
           </p>
           <h1
             className="animate-fade-up delay-100 font-bold leading-[1.05] mb-8 text-white"
             style={{ fontSize: "clamp(2.8rem, 7vw, 6rem)" }}
           >
-            Din neste bolig
+            Vi kjøper, pusser opp
             <br />
-            <span className="text-blue-300">starter her.</span>
+            <span className="text-blue-300">og skaper verdi.</span>
           </h1>
           <p className="animate-fade-up delay-200 text-white/70 text-lg leading-relaxed mb-12 max-w-xl">
-            LIN Eiendom hjelper deg med å kjøpe eller leie bolig. Vi kombinerer
-            lokal kunnskap med personlig service.
+            LIN Eiendom kjøper boliger som trenger litt kjærlighet, renoverer dem
+            grundig og selger eller leier dem ut. Har du et objekt du vil selge?
           </p>
           <div className="animate-fade-up delay-300 flex flex-wrap gap-4">
             <Link
-              href="/salg"
+              href="/selg-til-oss"
               className="group bg-white text-[var(--primary)] px-7 py-3.5 rounded-md font-semibold hover:bg-blue-50 transition-all duration-200 flex items-center gap-2"
             >
-              Boliger til salgs
+              Selg til oss
               <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
             </Link>
             <Link
-              href="/leie"
+              href="/boliger"
               className="group border border-white/30 text-white px-7 py-3.5 rounded-md font-semibold hover:bg-white/10 hover:border-white/50 transition-all duration-200 flex items-center gap-2"
             >
-              Boliger til leie
+              Se våre boliger
               <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Tjenester – renset, uten ikoner */}
+      {/* Prosess */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div>
             <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-4">
-              Hva vi tilbyr
+              Slik jobber vi
             </p>
             <h2
               className="font-bold text-[var(--foreground)] leading-tight mb-6"
               style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.75rem)" }}
             >
-              Full service,
+              Fra slitt til strålende —
               <br />
-              fra start til nøkkel.
+              det er vår spesialitet.
             </h2>
             <p className="text-[var(--muted)] leading-relaxed text-base max-w-md">
-              Vi håndterer hele prosessen for deg – enten du selger, kjøper eller
-              ønsker hjelp med utleie.
+              Vi ser potensialet der andre ser problemer. Med rett kompetanse inhouse
+              — fra juss til byggfag — håndterer vi hele prosessen selv.
             </p>
             <Link
               href="/om-oss"
               className="mt-8 inline-flex items-center gap-2 text-[var(--primary)] font-semibold text-sm group"
             >
-              <span>Møt teamet vårt</span>
+              <span>Møt teamet</span>
               <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
             </Link>
           </div>
 
           <div className="divide-y divide-[var(--border)]">
             {[
-              { nr: "01", tittel: "Boligsalg", tekst: "Profesjonell gjennomføring fra verdivurdering til overtakelse." },
-              { nr: "02", tittel: "Utleie", tekst: "Trygg utleie med grundig screening av leietakere." },
-              { nr: "03", tittel: "Verdivurdering", tekst: "Gratis og uforpliktende vurdering av din bolig." },
-              { nr: "04", tittel: "Rådgivning", tekst: "Personlig råd tilpasset din situasjon og dine mål." },
+              { nr: "01", tittel: "Vi kjøper", tekst: "Vi kjøper boliger og eiendommer som trenger renovering, gjerne direkte fra eier uten megler." },
+              { nr: "02", tittel: "Vi renoverer", tekst: "Simen og teamet vårt renoverer grundig — fra bad og kjøkken til tak og fasade." },
+              { nr: "03", tittel: "Vi selger eller leier ut", tekst: "Ferdig renoverte boliger selges eller leies ut til markedspris." },
+              { nr: "04", tittel: "Juridisk trygghet", tekst: "Øystein håndterer alle kontrakter og det juridiske, slik at alt er ryddig for alle parter." },
             ].map((item) => (
               <div
                 key={item.nr}
@@ -125,24 +122,21 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Boliger til salgs */}
-      {salgBoliger.length > 0 && (
+      {/* Boliger */}
+      {(salgBoliger.length > 0 || leieBoliger.length > 0) && (
         <section className="bg-[var(--surface)] border-y border-[var(--border)]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="flex items-end justify-between mb-10">
               <div>
-                <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-2">Salg</p>
-                <h2 className="text-2xl font-bold text-[var(--foreground)]">Boliger til salgs</h2>
+                <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-2">Tilgjengelig nå</p>
+                <h2 className="text-2xl font-bold text-[var(--foreground)]">Våre boliger</h2>
               </div>
-              <Link
-                href="/salg"
-                className="text-[var(--primary)] text-sm font-semibold hover:underline flex items-center gap-1"
-              >
+              <Link href="/boliger" className="text-[var(--primary)] text-sm font-semibold hover:underline">
                 Se alle →
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {salgBoliger.map((bolig) => (
+              {[...salgBoliger, ...leieBoliger].slice(0, 3).map((bolig) => (
                 <BoligKort key={bolig.id} {...bolig} />
               ))}
             </div>
@@ -150,30 +144,51 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Boliger til leie */}
-      {leieBoliger.length > 0 && (
-        <section>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div className="flex items-end justify-between mb-10">
-              <div>
-                <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-2">Leie</p>
-                <h2 className="text-2xl font-bold text-[var(--foreground)]">Boliger til leie</h2>
-              </div>
-              <Link
-                href="/leie"
-                className="text-[var(--primary)] text-sm font-semibold hover:underline"
+      {/* Selg til oss – teaser */}
+      <section className="bg-[var(--foreground)] text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-[0.2em] mb-4">For selgere</p>
+              <h2
+                className="font-bold leading-tight mb-6"
+                style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)" }}
               >
-                Se alle →
-              </Link>
+                Har du en bolig
+                <br />
+                som trenger oppussing?
+              </h2>
+              <p className="text-white/70 leading-relaxed mb-8 max-w-md">
+                Vi er interessert i objekter som trenger renovering — enten det er en gammel
+                enebolig, leilighet eller et nedlagt næringsbygg. Vi gir deg et raskt og
+                ærlig tilbud, uten megler og uten stress.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  href="/selg-til-oss"
+                  className="group inline-flex items-center gap-2 bg-white text-[var(--foreground)] px-6 py-3 rounded-md font-semibold text-sm hover:bg-gray-100 transition-colors"
+                >
+                  Send oss objektet ditt
+                  <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
+                </Link>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {leieBoliger.map((bolig) => (
-                <BoligKort key={bolig.id} {...bolig} />
+
+            <div className="grid grid-cols-1 gap-4">
+              {[
+                { tittel: "Rask prosess", tekst: "Vi gir deg tilbud innen 48 timer etter befaring." },
+                { tittel: "Ingen megler", tekst: "Du sparer meglerhonorar — vi kjøper direkte fra deg." },
+                { tittel: "Alle tilstander", tekst: "Vi er ikke redd for store prosjekter. Jo mer jobb, jo bedre." },
+              ].map((item) => (
+                <div key={item.tittel} className="bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
+                  <h3 className="font-semibold text-white mb-1">{item.tittel}</h3>
+                  <p className="text-white/60 text-sm leading-relaxed">{item.tekst}</p>
+                </div>
               ))}
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Team teaser */}
       <section className="bg-[var(--primary)] text-white">
@@ -185,29 +200,29 @@ export default async function Home() {
                 className="font-bold leading-tight mb-6"
                 style={{ fontSize: "clamp(1.6rem, 3vw, 2.5rem)" }}
               >
-                Fire meglere.
+                Rett kompetanse
                 <br />
-                Én felles ambisjon.
+                for hele kjeden.
               </h2>
               <p className="text-white/70 leading-relaxed mb-8 max-w-md">
-                Øystein, Magnus, Oskar og Simen jobber for at du alltid er trygg gjennom
-                hele prosessen – fra første visning til nøkkeloverlevering.
+                Fra juridisk due diligence til siste strøk med maling — teamet vårt
+                dekker alt inhouse. Det gjør oss raske, fleksible og kostnadseffektive.
               </p>
               <Link
                 href="/om-oss"
                 className="group inline-flex items-center gap-2 bg-white text-[var(--primary)] px-6 py-3 rounded-md font-semibold text-sm hover:bg-blue-50 transition-colors"
               >
-                Møt oss
+                Les mer om oss
                 <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
               </Link>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               {[
-                { navn: "Øystein Nordmo", initialer: "ØN" },
-                { navn: "Magnus Nordmo", initialer: "MN" },
-                { navn: "Oskar Røhnebækk", initialer: "OR" },
-                { navn: "Simen Stensrud", initialer: "SS" },
+                { navn: "Øystein Nordmo", rolle: "Advokat", initialer: "ØN" },
+                { navn: "Magnus Nordmo", rolle: "Dataingeniør", initialer: "MN" },
+                { navn: "Oskar Røhnebækk", rolle: "Salg", initialer: "OR" },
+                { navn: "Simen Stensrud", rolle: "Byggmester", initialer: "SS" },
               ].map((person) => (
                 <div
                   key={person.navn}
@@ -217,7 +232,7 @@ export default async function Home() {
                     {person.initialer}
                   </div>
                   <p className="text-white font-medium text-sm leading-snug">{person.navn}</p>
-                  <p className="text-white/50 text-xs mt-0.5">Eiendomsmegler</p>
+                  <p className="text-white/50 text-xs mt-0.5">{person.rolle}</p>
                 </div>
               ))}
             </div>
@@ -232,24 +247,23 @@ export default async function Home() {
           className="font-bold text-[var(--foreground)] mb-5"
           style={{ fontSize: "clamp(1.8rem, 3vw, 2.5rem)" }}
         >
-          Klar for neste steg?
+          Klar for en prat?
         </h2>
         <p className="text-[var(--muted)] mb-10 max-w-md mx-auto leading-relaxed">
-          Ta kontakt med oss for en uforpliktende samtale om dine boligbehov.
-          Vi svarer raskt.
+          Enten du vil selge en bolig, leie eller kjøpe — ta kontakt, så finner vi ut av det sammen.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link
-            href="/kontakt"
+            href="/selg-til-oss"
             className="bg-[var(--primary)] text-white px-8 py-3.5 rounded-md font-semibold hover:bg-[var(--primary-light)] transition-colors"
           >
-            Kontakt oss
+            Selg til oss
           </Link>
           <Link
-            href="/salg"
+            href="/kontakt"
             className="border border-[var(--border)] text-[var(--foreground)] px-8 py-3.5 rounded-md font-semibold hover:bg-[var(--surface)] transition-colors"
           >
-            Se boliger
+            Kontakt oss
           </Link>
         </div>
       </section>

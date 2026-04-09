@@ -6,7 +6,7 @@ export default function KontaktPage() {
       {/* Header */}
       <section className="bg-[var(--surface)] border-b border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-          <p className="text-[var(--secondary)] text-sm font-medium uppercase tracking-widest mb-3">Kontakt</p>
+          <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-3">Kontakt</p>
           <h1 className="text-3xl font-bold text-[var(--foreground)] mb-3">Ta kontakt med oss</h1>
           <p className="text-[var(--muted)]">Vi svarer deg innen én virkedag.</p>
         </div>
@@ -18,22 +18,32 @@ export default function KontaktPage() {
           <div className="lg:col-span-2 space-y-8">
             <div>
               <h2 className="font-semibold text-[var(--foreground)] mb-5">Kontaktinformasjon</h2>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {[
-                  { ikon: "📍", label: "Adresse", verdi: "Storgata 1, 0155 Oslo" },
-                  { ikon: "📞", label: "Telefon", verdi: "+47 22 33 44 55" },
-                  { ikon: "✉️", label: "E-post", verdi: "post@lineiendom.no" },
-                  { ikon: "🕐", label: "Åpningstider", verdi: "Man–Fre: 09:00–17:00" },
+                  { label: "Adresse", verdi: "Karl Johns Veg 12" },
+                  { label: "Telefon", verdi: "+47 22 33 44 55" },
+                  { label: "E-post", verdi: "post@lineiendom.no" },
+                  { label: "Åpningstider", verdi: "Man–Fre: 08:00–17:00" },
                 ].map((info) => (
-                  <div key={info.label} className="flex items-start gap-4">
-                    <span className="text-xl shrink-0">{info.ikon}</span>
-                    <div>
-                      <p className="text-sm text-[var(--muted)]">{info.label}</p>
-                      <p className="font-medium text-[var(--foreground)]">{info.verdi}</p>
-                    </div>
+                  <div key={info.label}>
+                    <p className="text-xs font-semibold text-[var(--muted)] uppercase tracking-wider mb-0.5">{info.label}</p>
+                    <p className="font-medium text-[var(--foreground)]">{info.verdi}</p>
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6">
+              <p className="text-xs font-semibold text-[var(--secondary)] uppercase tracking-wider mb-2">Vil du selge en bolig?</p>
+              <p className="text-[var(--muted)] text-sm leading-relaxed mb-4">
+                Har du et objekt som trenger renovering? Vi kjøper direkte — uten megler.
+              </p>
+              <a
+                href="/selg-til-oss"
+                className="inline-block text-[var(--primary)] font-semibold text-sm hover:underline"
+              >
+                Gå til Selg til oss →
+              </a>
             </div>
           </div>
 
