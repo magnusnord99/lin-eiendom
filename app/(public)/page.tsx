@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import BoligKort from "@/components/BoligKort";
+import ScrollReveal from "@/components/ScrollReveal";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +72,7 @@ export default async function Home() {
       {/* Prosess */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-          <div>
+          <ScrollReveal direction="left">
             <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-4">
               Slik jobber vi
             </p>
@@ -79,13 +80,13 @@ export default async function Home() {
               className="font-bold text-[var(--foreground)] leading-tight mb-6"
               style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.75rem)" }}
             >
-              Fra slitt til strålende —
+              Vi ser potensialet
               <br />
-              det er vår spesialitet.
+              der andre ser arbeid.
             </h2>
             <p className="text-[var(--muted)] leading-relaxed text-base max-w-md">
-              Vi ser potensialet der andre ser problemer. Med rett kompetanse inhouse
-              — fra juss til byggfag — håndterer vi hele prosessen selv.
+              Med rett kompetanse inhouse — fra juss til byggfag — håndterer vi
+              hele kjeden selv. Raskt, effektivt og med kvalitet i bunn.
             </p>
             <Link
               href="/om-oss"
@@ -94,29 +95,28 @@ export default async function Home() {
               <span>Møt teamet</span>
               <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
             </Link>
-          </div>
+          </ScrollReveal>
 
           <div className="divide-y divide-[var(--border)]">
             {[
-              { nr: "01", tittel: "Vi kjøper", tekst: "Vi kjøper boliger og eiendommer som trenger renovering, gjerne direkte fra eier uten megler." },
-              { nr: "02", tittel: "Vi renoverer", tekst: "Simen og teamet vårt renoverer grundig — fra bad og kjøkken til tak og fasade." },
-              { nr: "03", tittel: "Vi selger eller leier ut", tekst: "Ferdig renoverte boliger selges eller leies ut til markedspris." },
-              { nr: "04", tittel: "Juridisk trygghet", tekst: "Øystein håndterer alle kontrakter og det juridiske, slik at alt er ryddig for alle parter." },
+              { nr: "01", tittel: "Vi kjøper", tekst: "Vi kjøper boliger og eiendommer som trenger renovering, gjerne direkte fra eier uten megler.", delay: 0 },
+              { nr: "02", tittel: "Vi renoverer", tekst: "Vi renoverer grundig — fra bad og kjøkken til tak og fasade.", delay: 100 },
+              { nr: "03", tittel: "Vi selger eller leier ut", tekst: "Ferdig renoverte boliger selges eller leies ut til markedspris.", delay: 200 },
+              { nr: "04", tittel: "Juridisk trygghet", tekst: "Vi håndterer alle kontrakter og det juridiske, slik at alt er ryddig for alle parter.", delay: 300 },
             ].map((item) => (
-              <div
-                key={item.nr}
-                className="py-5 flex items-start gap-6 group hover:pl-2 transition-all duration-200"
-              >
-                <span className="text-[var(--border)] font-bold text-sm mt-0.5 shrink-0 group-hover:text-[var(--secondary)] transition-colors">
-                  {item.nr}
-                </span>
-                <div>
-                  <h3 className="font-semibold text-[var(--foreground)] mb-1 group-hover:text-[var(--primary)] transition-colors">
-                    {item.tittel}
-                  </h3>
-                  <p className="text-[var(--muted)] text-sm leading-relaxed">{item.tekst}</p>
+              <ScrollReveal key={item.nr} delay={item.delay}>
+                <div className="py-5 flex items-start gap-6 group hover:pl-2 transition-all duration-200">
+                  <span className="text-[var(--border)] font-bold text-sm mt-0.5 shrink-0 group-hover:text-[var(--secondary)] transition-colors">
+                    {item.nr}
+                  </span>
+                  <div>
+                    <h3 className="font-semibold text-[var(--foreground)] mb-1 group-hover:text-[var(--primary)] transition-colors">
+                      {item.tittel}
+                    </h3>
+                    <p className="text-[var(--muted)] text-sm leading-relaxed">{item.tekst}</p>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -126,18 +126,22 @@ export default async function Home() {
       {(salgBoliger.length > 0 || leieBoliger.length > 0) && (
         <section className="bg-[var(--surface)] border-y border-[var(--border)]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div className="flex items-end justify-between mb-10">
-              <div>
-                <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-2">Tilgjengelig nå</p>
-                <h2 className="text-2xl font-bold text-[var(--foreground)]">Våre boliger</h2>
+            <ScrollReveal>
+              <div className="flex items-end justify-between mb-10">
+                <div>
+                  <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-2">Tilgjengelig nå</p>
+                  <h2 className="text-2xl font-bold text-[var(--foreground)]">Våre boliger</h2>
+                </div>
+                <Link href="/boliger" className="text-[var(--primary)] text-sm font-semibold hover:underline">
+                  Se alle →
+                </Link>
               </div>
-              <Link href="/boliger" className="text-[var(--primary)] text-sm font-semibold hover:underline">
-                Se alle →
-              </Link>
-            </div>
+            </ScrollReveal>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...salgBoliger, ...leieBoliger].slice(0, 3).map((bolig) => (
-                <BoligKort key={bolig.id} {...bolig} />
+              {[...salgBoliger, ...leieBoliger].slice(0, 3).map((bolig, i) => (
+                <ScrollReveal key={bolig.id} delay={i * 100}>
+                  <BoligKort {...bolig} />
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -145,45 +149,45 @@ export default async function Home() {
       )}
 
       {/* Selg til oss – teaser */}
-      <section className="bg-[var(--foreground)] text-white">
+      <section className="bg-[var(--surface)] border-b border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-white/50 text-xs font-semibold uppercase tracking-[0.2em] mb-4">For selgere</p>
+            <ScrollReveal direction="left">
+              <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-4">For selgere</p>
               <h2
-                className="font-bold leading-tight mb-6"
+                className="font-bold leading-tight mb-6 text-[var(--foreground)]"
                 style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)" }}
               >
                 Har du en bolig
                 <br />
                 som trenger oppussing?
               </h2>
-              <p className="text-white/70 leading-relaxed mb-8 max-w-md">
+              <p className="text-[var(--muted)] leading-relaxed mb-8 max-w-md">
                 Vi er interessert i objekter som trenger renovering — enten det er en gammel
                 enebolig, leilighet eller et nedlagt næringsbygg. Vi gir deg et raskt og
                 ærlig tilbud, uten megler og uten stress.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <Link
-                  href="/selg-til-oss"
-                  className="group inline-flex items-center gap-2 bg-white text-[var(--foreground)] px-6 py-3 rounded-md font-semibold text-sm hover:bg-gray-100 transition-colors"
-                >
-                  Send oss objektet ditt
-                  <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
-                </Link>
-              </div>
-            </div>
+              <Link
+                href="/selg-til-oss"
+                className="group inline-flex items-center gap-2 bg-[var(--primary)] text-white px-6 py-3 rounded-md font-semibold text-sm hover:bg-[var(--primary-light)] transition-colors"
+              >
+                Send oss objektet ditt
+                <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
+              </Link>
+            </ScrollReveal>
 
             <div className="grid grid-cols-1 gap-4">
               {[
-                { tittel: "Rask prosess", tekst: "Vi gir deg tilbud innen 48 timer etter befaring." },
-                { tittel: "Ingen megler", tekst: "Du sparer meglerhonorar — vi kjøper direkte fra deg." },
-                { tittel: "Alle tilstander", tekst: "Vi er ikke redd for store prosjekter. Jo mer jobb, jo bedre." },
+                { tittel: "Rask prosess", tekst: "Vi gir deg tilbud innen 48 timer etter befaring.", delay: 0 },
+                { tittel: "Ingen megler", tekst: "Du sparer meglerhonorar — vi kjøper direkte fra deg.", delay: 100 },
+                { tittel: "Alle tilstander", tekst: "Vi er ikke redd for store prosjekter. Jo mer jobb, jo bedre.", delay: 200 },
               ].map((item) => (
-                <div key={item.tittel} className="bg-white/5 border border-white/10 rounded-xl p-5 hover:bg-white/8 transition-colors">
-                  <h3 className="font-semibold text-white mb-1">{item.tittel}</h3>
-                  <p className="text-white/60 text-sm leading-relaxed">{item.tekst}</p>
-                </div>
+                <ScrollReveal key={item.tittel} delay={item.delay}>
+                  <div className="bg-white border border-[var(--border)] rounded-xl p-5 hover:shadow-sm hover:border-[var(--secondary)] transition-all duration-200">
+                    <h3 className="font-semibold text-[var(--foreground)] mb-1">{item.tittel}</h3>
+                    <p className="text-[var(--muted)] text-sm leading-relaxed">{item.tekst}</p>
+                  </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -194,7 +198,7 @@ export default async function Home() {
       <section className="bg-[var(--primary)] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <ScrollReveal direction="left">
               <p className="text-white/50 text-xs font-semibold uppercase tracking-[0.2em] mb-4">Teamet</p>
               <h2
                 className="font-bold leading-tight mb-6"
@@ -215,25 +219,24 @@ export default async function Home() {
                 Les mer om oss
                 <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
               </Link>
-            </div>
+            </ScrollReveal>
 
             <div className="grid grid-cols-2 gap-3">
               {[
-                { navn: "Øystein Nordmo", rolle: "Advokat", initialer: "ØN" },
-                { navn: "Magnus Nordmo", rolle: "Dataingeniør", initialer: "MN" },
-                { navn: "Oskar Røhnebækk", rolle: "Salg", initialer: "OR" },
-                { navn: "Simen Stensrud", rolle: "Byggmester", initialer: "SS" },
+                { navn: "Øystein Nordmo", rolle: "Advokat", initialer: "ØN", delay: 0 },
+                { navn: "Magnus Nordmo", rolle: "Dataingeniør", initialer: "MN", delay: 100 },
+                { navn: "Oskar Røhnebækk", rolle: "Salg", initialer: "OR", delay: 200 },
+                { navn: "Simen Stensrud", rolle: "Byggmester", initialer: "SS", delay: 300 },
               ].map((person) => (
-                <div
-                  key={person.navn}
-                  className="bg-white/10 hover:bg-white/15 transition-colors rounded-xl p-5 border border-white/10"
-                >
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm mb-3">
-                    {person.initialer}
+                <ScrollReveal key={person.navn} delay={person.delay}>
+                  <div className="bg-white/10 hover:bg-white/15 transition-colors rounded-xl p-5 border border-white/10">
+                    <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm mb-3">
+                      {person.initialer}
+                    </div>
+                    <p className="text-white font-medium text-sm leading-snug">{person.navn}</p>
+                    <p className="text-white/50 text-xs mt-0.5">{person.rolle}</p>
                   </div>
-                  <p className="text-white font-medium text-sm leading-snug">{person.navn}</p>
-                  <p className="text-white/50 text-xs mt-0.5">{person.rolle}</p>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -242,30 +245,32 @@ export default async function Home() {
 
       {/* CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-4">Kom i gang</p>
-        <h2
-          className="font-bold text-[var(--foreground)] mb-5"
-          style={{ fontSize: "clamp(1.8rem, 3vw, 2.5rem)" }}
-        >
-          Klar for en prat?
-        </h2>
-        <p className="text-[var(--muted)] mb-10 max-w-md mx-auto leading-relaxed">
-          Enten du vil selge en bolig, leie eller kjøpe — ta kontakt, så finner vi ut av det sammen.
-        </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Link
-            href="/selg-til-oss"
-            className="bg-[var(--primary)] text-white px-8 py-3.5 rounded-md font-semibold hover:bg-[var(--primary-light)] transition-colors"
+        <ScrollReveal>
+          <p className="text-[var(--secondary)] text-xs font-semibold uppercase tracking-[0.2em] mb-4">Kom i gang</p>
+          <h2
+            className="font-bold text-[var(--foreground)] mb-5"
+            style={{ fontSize: "clamp(1.8rem, 3vw, 2.5rem)" }}
           >
-            Selg til oss
-          </Link>
-          <Link
-            href="/kontakt"
-            className="border border-[var(--border)] text-[var(--foreground)] px-8 py-3.5 rounded-md font-semibold hover:bg-[var(--surface)] transition-colors"
-          >
-            Kontakt oss
-          </Link>
-        </div>
+            Klar for en prat?
+          </h2>
+          <p className="text-[var(--muted)] mb-10 max-w-md mx-auto leading-relaxed">
+            Enten du vil selge en bolig, leie eller kjøpe — ta kontakt, så finner vi ut av det sammen.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link
+              href="/selg-til-oss"
+              className="bg-[var(--primary)] text-white px-8 py-3.5 rounded-md font-semibold hover:bg-[var(--primary-light)] transition-colors"
+            >
+              Selg til oss
+            </Link>
+            <Link
+              href="/kontakt"
+              className="border border-[var(--border)] text-[var(--foreground)] px-8 py-3.5 rounded-md font-semibold hover:bg-[var(--surface)] transition-colors"
+            >
+              Kontakt oss
+            </Link>
+          </div>
+        </ScrollReveal>
       </section>
     </>
   );
