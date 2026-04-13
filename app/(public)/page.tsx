@@ -31,7 +31,7 @@ export default async function Home() {
           className="absolute right-0 top-1/2 -translate-y-1/2 text-white/[0.04] font-black select-none pointer-events-none leading-none animate-fade-in delay-500"
           style={{ fontSize: "clamp(200px, 28vw, 420px)" }}
         >
-          LIN
+          YPNO
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 lg:py-36 w-full">
