@@ -85,8 +85,7 @@ export default async function Home() {
               der andre ser arbeid.
             </h2>
             <p className="text-[var(--muted)] leading-relaxed text-base max-w-md">
-              Med rett kompetanse inhouse — fra juss til byggfag — håndterer vi
-              hele kjeden selv. Raskt, effektivt og med kvalitet i bunn.
+              Med rett kompetanse inhouse håndterer vi hele kjeden selv, fra juss til byggfag. Raskt, effektivt og med kvalitet i bunn.
             </p>
             <Link
               href="/om-oss"
@@ -100,7 +99,7 @@ export default async function Home() {
           <div className="divide-y divide-[var(--border)]">
             {[
               { nr: "01", tittel: "Vi kjøper", tekst: "Vi kjøper boliger og eiendommer som trenger renovering, gjerne direkte fra eier uten megler.", delay: 0 },
-              { nr: "02", tittel: "Vi renoverer", tekst: "Vi renoverer grundig — fra bad og kjøkken til tak og fasade.", delay: 100 },
+              { nr: "02", tittel: "Vi renoverer", tekst: "Vi renoverer grundig, fra bad og kjøkken til tak og fasade.", delay: 100 },
               { nr: "03", tittel: "Vi selger eller leier ut", tekst: "Ferdig renoverte boliger selges eller leies ut til markedspris.", delay: 200 },
               { nr: "04", tittel: "Juridisk trygghet", tekst: "Vi håndterer alle kontrakter og det juridiske, slik at alt er ryddig for alle parter.", delay: 300 },
             ].map((item) => (
@@ -163,9 +162,7 @@ export default async function Home() {
                 som trenger oppussing?
               </h2>
               <p className="text-[var(--muted)] leading-relaxed mb-8 max-w-md">
-                Vi er interessert i objekter som trenger renovering — enten det er en gammel
-                enebolig, leilighet eller et nedlagt næringsbygg. Vi gir deg et raskt og
-                ærlig tilbud, uten megler og uten stress.
+                Vi er interessert i objekter som trenger renovering, enten det er en gammel enebolig, leilighet eller et nedlagt næringsbygg. Vi gir deg et raskt og ærlig tilbud, uten megler og uten stress.
               </p>
               <Link
                 href="/selg-til-oss"
@@ -209,8 +206,7 @@ export default async function Home() {
                 for hele kjeden.
               </h2>
               <p className="text-white/70 leading-relaxed mb-8 max-w-md">
-                Fra juridisk due diligence til siste strøk med maling — teamet vårt
-                dekker alt inhouse. Det gjør oss raske, fleksible og kostnadseffektive.
+                Teamet vårt dekker alt inhouse, fra juridisk due diligence til siste strøk med maling. Det gjør oss raske, fleksible og kostnadseffektive.
               </p>
               <Link
                 href="/om-oss"
