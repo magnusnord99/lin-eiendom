@@ -1,31 +1,9 @@
 "use client";
-import { useEffect, useRef } from "react";
 
 export default function HeroAnimation() {
-  const textRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (textRef.current) {
-        const scrollY = window.scrollY;
-        textRef.current.style.transform = `translateY(-50%) translateX(${scrollY * 0.5}px)`;
-      }
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   return (
     <>
-      {/* YPNO – parallaxer til høyre ved scroll */}
-      <div
-        ref={textRef}
-        className="absolute right-0 top-1/2 -translate-y-1/2 text-white/[0.045] font-black select-none pointer-events-none leading-none animate-fade-in delay-500"
-        style={{ fontSize: "clamp(200px, 28vw, 420px)" }}
-      >
-        YPNO
-      </div>
-
       {/* Byskyline – stiger opp fra bunnen ved innlasting */}
       <div className="absolute bottom-0 left-0 right-0 pointer-events-none overflow-hidden animate-skyline-rise">
         <svg
