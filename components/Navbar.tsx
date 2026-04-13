@@ -23,10 +23,10 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="w-9 h-9 bg-[var(--primary)] rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-lg leading-none">L</span>
+              <span className="text-white font-bold text-lg leading-none">Y</span>
             </div>
             <span className="font-semibold text-[var(--primary)] text-lg tracking-tight">
-              LIN <span className="font-light">Eiendom</span>
+              Yappuccino <span className="font-light">AS</span>
             </span>
           </Link>
 

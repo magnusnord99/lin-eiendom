@@ -9,10 +9,10 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-9 h-9 bg-white/20 rounded-md flex items-center justify-center">
-                <span className="text-white font-bold text-lg leading-none">L</span>
+                <span className="text-white font-bold text-lg leading-none">Y</span>
               </div>
               <span className="font-semibold text-lg tracking-tight">
-                LIN <span className="font-light">Eiendom</span>
+                Yappuccino <span className="font-light">AS</span>
               </span>
             </div>
             <p className="text-white/70 text-sm leading-relaxed">
@@ -56,7 +56,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/20 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-white/50">
-          <p>© {new Date().getFullYear()} LIN Eiendom. Alle rettigheter forbeholdt.</p>
+          <p>© {new Date().getFullYear()} Yappuccino AS. Alle rettigheter forbeholdt.</p>
           <Link href="/admin" className="hover:text-white/80 transition-colors">
             Admin
           </Link>

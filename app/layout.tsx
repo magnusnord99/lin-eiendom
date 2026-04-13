@@ -9,9 +9,9 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "LIN Eiendom – Salg og utleie",
+  title: "Yappuccino AS – Eiendomsutvikling",
   description:
-    "LIN Eiendom hjelper deg med å kjøpe, selge eller leie bolig. Profesjonell og lokal eiendomsmegler.",
+    "Yappuccino AS kjøper boliger som trenger renovering, pusser dem opp og selger eller leier dem ut.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

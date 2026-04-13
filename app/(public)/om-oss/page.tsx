@@ -49,7 +49,7 @@ export default function OmOssPage() {
               der andre ser arbeid.
             </h1>
             <p className="animate-fade-up delay-200 text-white/70 text-lg leading-relaxed max-w-lg">
-              LIN Eiendom kjøper boliger som trenger renovering, pusser dem opp og
+              Yappuccino AS kjøper boliger som trenger renovering, pusser dem opp og
               selger eller leier dem ut. Med advokat, byggmester, selger og ingeniør
               inhouse — gjør vi alt selv.
             </p>

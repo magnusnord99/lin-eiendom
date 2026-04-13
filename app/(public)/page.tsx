@@ -47,7 +47,7 @@ export default async function Home() {
             <span className="text-blue-300">og skaper verdi.</span>
           </h1>
           <p className="animate-fade-up delay-200 text-white/70 text-lg leading-relaxed mb-12 max-w-xl">
-            LIN Eiendom kjøper boliger som trenger litt kjærlighet, renoverer dem
+            Yappuccino AS kjøper boliger som trenger litt kjærlighet, renoverer dem
             grundig og selger eller leier dem ut. Har du et objekt du vil selge?
           </p>
           <div className="animate-fade-up delay-300 flex flex-wrap gap-4">
