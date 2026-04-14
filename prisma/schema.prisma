@@ -32,3 +32,15 @@ model AdminUser {
   passord    String
   opprettet  DateTime @default(now())
 }
+
+model Henvendelse {
+  id        Int      @id @default(autoincrement())
+  navn      String
+  epost     String
+  telefon   String?
+  adresse   String?
+  tilstand  String?
+  melding   String
+  lest      Boolean  @default(false)
+  opprettet DateTime @default(now())
+}

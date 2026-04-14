@@ -13,7 +13,7 @@ export default function AdminNavbar() {
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-6">
             <Link href="/admin" className="font-semibold text-sm">
-              LIN Admin
+              Yappuccino Admin
             </Link>
             <nav className="flex items-center gap-1">
               <Link
@@ -31,6 +31,14 @@ export default function AdminNavbar() {
                 }`}
               >
                 Boliger
+              </Link>
+              <Link
+                href="/admin/henvendelser"
+                className={`px-3 py-1.5 rounded text-sm transition-colors ${
+                  pathname.startsWith("/admin/henvendelser") ? "bg-white/20" : "hover:bg-white/10"
+                }`}
+              >
+                Henvendelser
               </Link>
             </nav>
           </div>
