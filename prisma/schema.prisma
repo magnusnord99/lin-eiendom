@@ -24,6 +24,12 @@ model Bolig {
   aktiv       Boolean  @default(true)
   opprettet   DateTime @default(now())
   oppdatert   DateTime @updatedAt
+  status                      String    @default("til_salgs")
+  kjopesum                     Int?
+  kjopsdato                    DateTime?
+  finansiering                 String?
+  estimertVerdiNa              Int?
+  estimertVerdiEtterOppussing  Int?
 }
 
 model AdminUser {
