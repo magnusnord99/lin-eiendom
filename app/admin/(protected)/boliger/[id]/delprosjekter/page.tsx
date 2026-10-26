@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { hentTimerForEiendom } from "@/lib/timeregistrering";
 import NyttDelprosjektSkjema from "./NyttDelprosjektSkjema";
+import TimeregistreringPanel from "./TimeregistreringPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +19,19 @@ export default async function DelprosjekterPage({ params }: { params: Promise<{ 
   });
 
   if (!eiendom) notFound();
+
+  const session = await getServerSession(authOptions);
+  const naavarendeBrukerId = Number(session?.user?.id);
+  const timerRader = await hentTimerForEiendom(prisma, eiendomId);
+  const timer = timerRader.map((t) => ({
+    id: t.id,
+    dato: t.dato.toISOString().slice(0, 10),
+    antallTimer: t.antallTimer,
+    beskrivelse: t.beskrivelse,
+    delprosjektNavn: t.delprosjektNavn,
+    brukerId: t.brukerId,
+    brukerNavn: t.brukerNavn,
+  }));
 
   return (
     <div>
@@ -50,6 +67,16 @@ export default async function DelprosjekterPage({ params }: { params: Promise<{ 
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="bg-white rounded-xl border border-[var(--border)] p-6 mt-8">
+        <h2 className="font-semibold text-[var(--foreground)] mb-5">Timeregistrering</h2>
+        <TimeregistreringPanel
+          eiendomId={eiendomId}
+          delprosjekter={eiendom.delprosjekter.map((d) => ({ id: d.id, navn: d.navn }))}
+          timer={timer}
+          naavarendeBrukerId={naavarendeBrukerId}
+        />
       </div>
     </div>
   );
