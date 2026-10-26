@@ -1,7 +1,23 @@
 // lib/eiendom.test.ts
 import { describe, it, expect } from "vitest";
 import { createTestDb } from "../tests/helpers/testDb";
-import { hentOffentligSynligeBoliger, hentOffentligSynligBolig } from "./eiendom";
+import { hentOffentligSynligeBoliger, hentOffentligSynligBolig, plukkSkrivbareBoligFelter } from "./eiendom";
+
+describe("plukkSkrivbareBoligFelter", () => {
+  it("beholder alle tillatte felt, inkludert null- og false-verdier", () => {
+    const resultat = plukkSkrivbareBoligFelter({ tittel: "A", pris: null, aktiv: false });
+    expect(resultat).toEqual({ tittel: "A", pris: null, aktiv: false });
+  });
+
+  it("fjerner relasjonsfelt og ukjente felt", () => {
+    const resultat = plukkSkrivbareBoligFelter({
+      tittel: "A",
+      delprosjekter: { create: [{ navn: "Hack" }] },
+      ukjentFelt: "noe",
+    });
+    expect(resultat).toEqual({ tittel: "A" });
+  });
+});
 
 describe("hentOffentligSynligeBoliger", () => {
   it("returnerer kun boliger med offentlig synlig status", async () => {

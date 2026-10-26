@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { krevInnloggetSesjon } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma/client";
-import { hentOffentligSynligBolig } from "@/lib/eiendom";
+import { hentOffentligSynligBolig, plukkSkrivbareBoligFelter } from "@/lib/eiendom";
 import { resolverEffektivStatus, validerStatusForSkriving } from "@/lib/eiendom-status";
 import { harDelprosjekter } from "@/lib/delprosjekt";
 
@@ -20,14 +20,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id: idParam } = await params;
   const id = parseInt(idParam);
   // forventetStatus/forventetType er det klienten opprinnelig lastet (ikke Bolig-kolonner).
-  const { forventetStatus, forventetType, ...data } = await req.json();
+  const { forventetStatus, forventetType, ...raw } = await req.json();
+  const data = plukkSkrivbareBoligFelter(raw);
 
   const eksisterende = await prisma.bolig.findUnique({ where: { id } });
   if (!eksisterende) return NextResponse.json({ error: "Ikke funnet" }, { status: 404 });
 
   if (data.status === undefined && data.type === undefined) {
     // Ingen status/type i forespørselen: ingen samtidighetsrisiko for disse feltene.
-    const bolig = await prisma.bolig.update({ where: { id }, data });
+    const bolig = await prisma.bolig.update({ where: { id }, data: data as Prisma.BoligUpdateInput });
     return NextResponse.json(bolig);
   }
 
@@ -52,7 +53,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       status: typeof forventetStatus === "string" ? forventetStatus : eksisterende.status,
       type: typeof forventetType === "string" ? forventetType : eksisterende.type,
     },
-    data,
+    data: data as Prisma.BoligUpdateInput,
   });
   if (resultat.count === 0) {
     return NextResponse.json(

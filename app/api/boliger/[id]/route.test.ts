@@ -132,6 +132,23 @@ describe("PUT /api/boliger/[id]", () => {
     expect(prismaMock.bolig.update).toHaveBeenCalledWith({ where: { id: 1 }, data: { tittel: "Oppdatert tittel" } });
     expect(prismaMock.bolig.updateMany).not.toHaveBeenCalled();
   });
+
+  it("fjerner relasjonsfelt (f.eks. forsøk på å slette andres timeregistreringer) før oppdatering", async () => {
+    prismaMock.bolig.findUnique.mockResolvedValueOnce({ id: 1, status: "til_salgs", type: "salg" });
+    prismaMock.bolig.update.mockResolvedValue({ id: 1 });
+
+    const req = new Request("http://localhost/api/boliger/1", {
+      method: "PUT",
+      body: JSON.stringify({
+        tittel: "x",
+        delprosjekter: { update: { where: { id: 1 }, data: { timeregistreringer: { deleteMany: { brukerId: 2 } } } } },
+      }),
+    });
+
+    await PUT(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+
+    expect(prismaMock.bolig.update).toHaveBeenCalledWith({ where: { id: 1 }, data: { tittel: "x" } });
+  });
 });
 
 describe("DELETE /api/boliger/[id]", () => {

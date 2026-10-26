@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { krevInnloggetSesjon } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { hentOffentligSynligeBoliger } from "@/lib/eiendom";
+import { Prisma } from "@/app/generated/prisma/client";
+import { hentOffentligSynligeBoliger, plukkSkrivbareBoligFelter } from "@/lib/eiendom";
 import { resolverEffektivStatus, validerStatusForSkriving } from "@/lib/eiendom-status";
 
 export async function GET(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
   const bruker = await krevInnloggetSesjon();
   if (!bruker) return NextResponse.json({ error: "Ikke autorisert" }, { status: 401 });
 
-  const data = await req.json();
+  const data = plukkSkrivbareBoligFelter(await req.json());
 
   let effektiv: { status: unknown; type: string };
   try {
@@ -32,6 +33,6 @@ export async function POST(req: NextRequest) {
   data.status = effektiv.status;
   data.type = effektiv.type;
 
-  const bolig = await prisma.bolig.create({ data });
+  const bolig = await prisma.bolig.create({ data: data as unknown as Prisma.BoligCreateInput });
   return NextResponse.json(bolig, { status: 201 });
 }

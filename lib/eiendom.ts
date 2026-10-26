@@ -24,6 +24,25 @@ export const OFFENTLIG_BOLIG_FELTER = {
 
 export type OffentligBolig = Prisma.BoligGetPayload<{ select: typeof OFFENTLIG_BOLIG_FELTER }>;
 
+// Allowlist for hva API-rutene lar en klient skrive til en Bolig. Alle skalare
+// kolonner unntatt id/opprettet/oppdatert (server-styrte); ingen relasjonsfelt.
+// Dette hindrer at en nøstet Prisma-skriveoperasjon (f.eks. et forsøk på å
+// slette eller flytte relaterte rader via en nøstet `update`) kan smugles
+// gjennom disse endepunktene.
+export const SKRIVBARE_BOLIG_SKALARFELTER = [
+  "tittel", "adresse", "by", "pris", "type", "storrelse", "rom", "bad",
+  "beskrivelse", "bilder", "lat", "lng", "aktiv", "status",
+  "kjopesum", "kjopsdato", "finansiering", "estimertVerdiNa", "estimertVerdiEtterOppussing",
+] as const;
+
+export function plukkSkrivbareBoligFelter(input: Record<string, unknown>): Record<string, unknown> {
+  const resultat: Record<string, unknown> = {};
+  for (const felt of SKRIVBARE_BOLIG_SKALARFELTER) {
+    if (felt in input) resultat[felt] = input[felt];
+  }
+  return resultat;
+}
+
 export async function hentOffentligSynligeBoliger(
   prisma: PrismaClient,
   opts?: { type?: string; by?: string; take?: number }
