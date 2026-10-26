@@ -29,7 +29,7 @@ describe("PUT /api/boliger/[id]", () => {
 
     const req = new Request("http://localhost/api/boliger/1", {
       method: "PUT",
-      body: JSON.stringify({ status: "solgt" }),
+      body: JSON.stringify({ status: "solgt", forventetStatus: "til_salgs", forventetType: "salg" }),
     });
 
     const res = await PUT(req as any, { params: Promise.resolve({ id: "1" }) } as any);
@@ -48,15 +48,68 @@ describe("PUT /api/boliger/[id]", () => {
 
     const req = new Request("http://localhost/api/boliger/1", {
       method: "PUT",
-      body: JSON.stringify({ status: "solgt" }),
+      body: JSON.stringify({ status: "solgt", forventetStatus: "til_salgs", forventetType: "salg" }),
     });
 
     const res = await PUT(req as any, { params: Promise.resolve({ id: "1" }) } as any);
 
     expect(res.status).toBe(200);
+    expect(prismaMock.bolig.updateMany).toHaveBeenCalledWith({
+      where: { id: 1, status: "til_salgs", type: "salg" },
+      data: { status: "solgt", type: "salg" },
+    });
+  });
+
+  it("gir 409 når et utdatert skjema lagrer etter at en annen har endret status", async () => {
+    // Raden er nå "solgt" (B lagret), men A sitt skjema ble lastet da den var "til_salgs".
+    prismaMock.bolig.findUnique.mockResolvedValue({ id: 1, status: "solgt", type: "salg" });
+    prismaMock.bolig.updateMany.mockResolvedValue({ count: 0 });
+
+    const req = new Request("http://localhost/api/boliger/1", {
+      method: "PUT",
+      body: JSON.stringify({ status: "til_salgs", type: "salg", forventetStatus: "til_salgs", forventetType: "salg" }),
+    });
+
+    const res = await PUT(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+
+    expect(res.status).toBe(409);
+    // Betingelsen må bruke det klienten lastet, ikke den ferske lesingen ("solgt").
     expect(prismaMock.bolig.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 1, status: "til_salgs", type: "salg" } })
     );
+    expect(prismaMock.bolig.update).not.toHaveBeenCalled();
+  });
+
+  it("faller tilbake til den ferske lesingen når forventetStatus/forventetType mangler", async () => {
+    prismaMock.bolig.findUnique.mockResolvedValue({ id: 1, status: "til_salgs", type: "salg" });
+    prismaMock.bolig.updateMany.mockResolvedValue({ count: 0 });
+
+    const req = new Request("http://localhost/api/boliger/1", {
+      method: "PUT",
+      body: JSON.stringify({ status: "solgt" }),
+    });
+
+    const res = await PUT(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+
+    expect(res.status).toBe(409);
+    expect(prismaMock.bolig.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1, status: "til_salgs", type: "salg" } })
+    );
+  });
+
+  it("gir 400 (ikke en ufanget feil) for tom type", async () => {
+    prismaMock.bolig.findUnique.mockResolvedValue({ id: 1, status: "til_salgs", type: "salg" });
+
+    const req = new Request("http://localhost/api/boliger/1", {
+      method: "PUT",
+      body: JSON.stringify({ type: "" }),
+    });
+
+    const res = await PUT(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+
+    expect(res.status).toBe(400);
+    expect(prismaMock.bolig.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.bolig.update).not.toHaveBeenCalled();
   });
 
   it("bruker vanlig update (ikke updateMany) for en ren tittel-redigering uten status/type", async () => {

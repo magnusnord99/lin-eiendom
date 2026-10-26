@@ -111,6 +111,9 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
       lat: form.lat ? parseFloat(form.lat) : null,
       lng: form.lng ? parseFloat(form.lng) : null,
       status: form.status,
+      // Ved redigering: send det skjemaet ble lastet med, så serveren kan avvise
+      // lagringen (409) hvis noen andre har endret status/type i mellomtiden.
+      ...(initial?.id ? { forventetStatus: initial.status, forventetType: initial.type } : {}),
     };
 
     const url = initial?.id ? `/api/boliger/${initial.id}` : "/api/boliger";

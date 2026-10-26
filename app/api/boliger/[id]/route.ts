@@ -17,7 +17,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { id: idParam } = await params;
   const id = parseInt(idParam);
-  const data = await req.json();
+  // forventetStatus/forventetType er det klienten opprinnelig lastet (ikke Bolig-kolonner).
+  const { forventetStatus, forventetType, ...data } = await req.json();
 
   const eksisterende = await prisma.bolig.findUnique({ where: { id } });
   if (!eksisterende) return NextResponse.json({ error: "Ikke funnet" }, { status: 404 });
@@ -28,16 +29,27 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json(bolig);
   }
 
-  const { status, type } = resolverEffektivStatus(data, eksisterende);
-  const feil = validerStatusForSkriving(status, type);
+  let feil: string | null;
+  try {
+    const { status, type } = resolverEffektivStatus(data, eksisterende);
+    feil = validerStatusForSkriving(status, type);
+    data.status = status;
+    data.type = type;
+  } catch {
+    feil = "Mangler type.";
+  }
   if (feil) return NextResponse.json({ error: feil }, { status: 400 });
-  data.status = status;
-  data.type = type;
 
   // Optimistisk samtidighetskontroll: skriv kun hvis raden fortsatt har den
-  // statusen/typen vi leste, så vi ikke stille overskriver en samtidig endring.
+  // statusen/typen klienten lastet (forventet*), så et utdatert skjema ikke stille
+  // overskriver en samtidig endring. Faller tilbake til den ferske lesingen for
+  // kallere som ikke sender forventet* (svakere vern, men bryter ikke).
   const resultat = await prisma.bolig.updateMany({
-    where: { id, status: eksisterende.status, type: eksisterende.type },
+    where: {
+      id,
+      status: typeof forventetStatus === "string" ? forventetStatus : eksisterende.status,
+      type: typeof forventetType === "string" ? forventetType : eksisterende.type,
+    },
     data,
   });
   if (resultat.count === 0) {
