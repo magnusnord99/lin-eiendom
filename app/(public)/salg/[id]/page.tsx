@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { hentOffentligSynligBolig } from "@/lib/eiendom";
 import BoligGalleri from "@/components/BoligGalleri";
 import KontaktSkjema from "@/components/KontaktSkjema";
 import BoligKart from "@/components/BoligKart";
@@ -12,9 +13,9 @@ function formatPris(pris: number) {
 
 export default async function SalgDetalj({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const bolig = await prisma.bolig.findUnique({ where: { id: parseInt(id), aktiv: true } });
+  const bolig = await hentOffentligSynligBolig(prisma, parseInt(id), "salg");
 
-  if (!bolig || bolig.type !== "salg") notFound();
+  if (!bolig) notFound();
 
   let bilder: string[] = [];
   try { bilder = JSON.parse(bolig.bilder); } catch {}

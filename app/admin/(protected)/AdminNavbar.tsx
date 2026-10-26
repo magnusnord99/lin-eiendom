@@ -4,7 +4,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
-export default function AdminNavbar() {
+export default function AdminNavbar({ brukerNavn }: { brukerNavn: string }) {
   const pathname = usePathname();
 
   return (
@@ -46,6 +46,7 @@ export default function AdminNavbar() {
             <Link href="/" target="_blank" className="text-white/70 text-sm hover:text-white">
               Se nettside ↗
             </Link>
+            <span className="text-white/90 text-sm">{brukerNavn}</span>
             <button
               onClick={() => signOut({ callbackUrl: "/admin/innlogging" })}
               className="text-white/70 text-sm hover:text-white transition-colors"

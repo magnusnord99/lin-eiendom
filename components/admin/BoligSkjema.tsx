@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Plus, Loader2 } from "lucide-react";
+import { STATUSER_FOR_TYPE, statusLabel } from "@/lib/eiendom-status";
 
 interface BoligData {
   id?: number;
@@ -19,7 +20,7 @@ interface BoligData {
   bilder: string[];
   lat: string;
   lng: string;
-  aktiv: boolean;
+  status: string;
 }
 
 interface BoligSkjemaProps {
@@ -41,7 +42,7 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
     bilder: initial?.bilder ?? [],
     lat: initial?.lat?.toString() ?? "",
     lng: initial?.lng?.toString() ?? "",
-    aktiv: initial?.aktiv ?? true,
+    status: initial?.status ?? ((initial?.type ?? "salg") === "leie" ? "klar_for_utleie" : "til_salgs"),
   });
 
   const [laster, setLaster] = useState(false);
@@ -51,6 +52,18 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
 
   function oppdater(felt: keyof BoligData, verdi: string | boolean) {
     setForm((f) => ({ ...f, [felt]: verdi }));
+  }
+
+  function statuserFor(type: string): string[] {
+    return STATUSER_FOR_TYPE[type as "salg" | "leie"] ?? [];
+  }
+
+  function oppdaterType(nyType: string) {
+    setForm((f) => {
+      const gyldige = statuserFor(nyType);
+      const status = gyldige.includes(f.status) ? f.status : (gyldige[0] ?? f.status);
+      return { ...f, type: nyType, status };
+    });
   }
 
   async function lastOppBilde(e: React.ChangeEvent<HTMLInputElement>) {
@@ -97,7 +110,10 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
       bilder: JSON.stringify(form.bilder),
       lat: form.lat ? parseFloat(form.lat) : null,
       lng: form.lng ? parseFloat(form.lng) : null,
-      aktiv: form.aktiv,
+      status: form.status,
+      // Ved redigering: send det skjemaet ble lastet med, så serveren kan avvise
+      // lagringen (409) hvis noen andre har endret status/type i mellomtiden.
+      ...(initial?.id ? { forventetStatus: initial.status, forventetType: initial.type } : {}),
     };
 
     const url = initial?.id ? `/api/boliger/${initial.id}` : "/api/boliger";
@@ -113,7 +129,8 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
       router.push("/admin/boliger");
       router.refresh();
     } else {
-      setFeil("Noe gikk galt. Prøv igjen.");
+      const body = await res.json().catch(() => null);
+      setFeil(typeof body?.error === "string" ? body.error : "Noe gikk galt. Prøv igjen.");
     }
     setLaster(false);
   }
@@ -124,6 +141,13 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
     if (res.ok) {
       router.push("/admin/boliger");
       router.refresh();
+    } else {
+      let feilmelding = "Noe gikk galt. Prøv igjen.";
+      try {
+        const data = await res.json();
+        feilmelding = data.error ?? feilmelding;
+      } catch {}
+      setFeil(feilmelding);
     }
   }
 
@@ -150,7 +174,7 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
           </div>
           <div>
             <label className={labelKlasse}>Type *</label>
-            <select value={form.type} onChange={(e) => oppdater("type", e.target.value)} className={inputKlasse}>
+            <select value={form.type} onChange={(e) => oppdaterType(e.target.value)} className={inputKlasse}>
               <option value="salg">Til salgs</option>
               <option value="leie">Til leie</option>
             </select>
@@ -233,13 +257,15 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
 
       {/* Status */}
       <div className="bg-white rounded-xl border border-[var(--border)] p-6">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" checked={form.aktiv} onChange={(e) => oppdater("aktiv", e.target.checked)} className="w-4 h-4 rounded border-[var(--border)] accent-[var(--primary)]" />
-          <div>
-            <span className="font-medium text-sm text-[var(--foreground)]">Aktiv annonse</span>
-            <p className="text-xs text-[var(--muted)]">Skjul annonsen ved å fjerne haken</p>
-          </div>
-        </label>
+        <label htmlFor="bolig-status" className={labelKlasse}>Status</label>
+        <select id="bolig-status" value={form.status} onChange={(e) => oppdater("status", e.target.value)} className={inputKlasse}>
+          {statuserFor(form.type).map((s) => (
+            <option key={s} value={s}>
+              {statusLabel(s)}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-[var(--muted)] mt-1">Kun «Til salgs» og «Klar for utleie» vises på den offentlige siden.</p>
       </div>
 
       {feil && <p className="text-red-600 text-sm">{feil}</p>}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { hentOffentligSynligeBoliger } from "@/lib/eiendom";
 import BoligKort from "@/components/BoligKort";
 import ScrollReveal from "@/components/ScrollReveal";
 import HeroAnimation from "@/components/HeroAnimation";
@@ -7,11 +8,7 @@ import HeroAnimation from "@/components/HeroAnimation";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const boliger = await prisma.bolig.findMany({
-    where: { aktiv: true },
-    orderBy: { opprettet: "desc" },
-    take: 6,
-  });
+  const boliger = await hentOffentligSynligeBoliger(prisma, { take: 6 });
 
   const salgBoliger = boliger.filter((b) => b.type === "salg").slice(0, 3);
   const leieBoliger = boliger.filter((b) => b.type === "leie").slice(0, 3);

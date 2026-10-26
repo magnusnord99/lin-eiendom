@@ -1,13 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { hentOffentligSynligeBoliger } from "@/lib/eiendom";
 import BoligKort from "@/components/BoligKort";
 
 export const dynamic = "force-dynamic";
 
 export default async function SalgPage() {
-  const boliger = await prisma.bolig.findMany({
-    where: { aktiv: true, type: "salg" },
-    orderBy: { opprettet: "desc" },
-  });
+  const boliger = await hentOffentligSynligeBoliger(prisma, { type: "salg" });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

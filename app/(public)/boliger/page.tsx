@@ -1,14 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { hentOffentligSynligeBoliger } from "@/lib/eiendom";
 import BoligKort from "@/components/BoligKort";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function BoligerPage() {
-  const boliger = await prisma.bolig.findMany({
-    where: { aktiv: true },
-    orderBy: { opprettet: "desc" },
-  });
+  const boliger = await hentOffentligSynligeBoliger(prisma);
 
   const salgBoliger = boliger.filter((b) => b.type === "salg");
   const leieBoliger = boliger.filter((b) => b.type === "leie");

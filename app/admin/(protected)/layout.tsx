@@ -6,13 +6,13 @@ import AdminNavbar from "./AdminNavbar";
 export default async function AdminProtectedLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session?.user?.id) {
     redirect("/admin/innlogging");
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminNavbar />
+      <AdminNavbar brukerNavn={session.user?.name ?? "Ukjent bruker"} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </div>

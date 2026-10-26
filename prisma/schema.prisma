@@ -24,13 +24,49 @@ model Bolig {
   aktiv       Boolean  @default(true)
   opprettet   DateTime @default(now())
   oppdatert   DateTime @updatedAt
+  status                      String    @default("til_salgs")
+  kjopesum                     Int?
+  kjopsdato                    DateTime?
+  finansiering                 String?
+  estimertVerdiNa              Int?
+  estimertVerdiEtterOppussing  Int?
+  delprosjekter Delprosjekt[]
 }
 
 model AdminUser {
   id         Int      @id @default(autoincrement())
   brukernavn String   @unique
   passord    String
+  navn       String
+  rolle      String   @default("eier")
   opprettet  DateTime @default(now())
+  timeregistreringer Timeregistrering[]
+}
+
+model Delprosjekt {
+  id          Int      @id @default(autoincrement())
+  eiendomId   Int
+  eiendom     Bolig    @relation(fields: [eiendomId], references: [id])
+  navn        String
+  beskrivelse String?
+  budsjett    Int?
+  status      String   @default("planlagt")
+  opprettet   DateTime @default(now())
+  oppdatert   DateTime @updatedAt
+  timeregistreringer Timeregistrering[]
+}
+
+model Timeregistrering {
+  id            Int         @id @default(autoincrement())
+  delprosjektId Int
+  delprosjekt   Delprosjekt @relation(fields: [delprosjektId], references: [id])
+  brukerId      Int
+  bruker        AdminUser   @relation(fields: [brukerId], references: [id])
+  dato          DateTime
+  antallTimer   Float
+  beskrivelse   String?
+  opprettet     DateTime    @default(now())
+  oppdatert     DateTime    @updatedAt
 }
 
 model Henvendelse {
