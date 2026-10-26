@@ -41,7 +41,7 @@ export default function InnloggingSkjema() {
           value={form.username}
           onChange={(e) => setForm({ ...form, username: e.target.value })}
           className="w-full px-3 py-2 border border-[var(--border)] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
-          placeholder="admin"
+          placeholder="ditt brukernavn"
         />
       </div>
       <div>
