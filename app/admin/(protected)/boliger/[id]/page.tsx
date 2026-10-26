@@ -38,7 +38,7 @@ export default async function RedigerBoligPage({ params }: { params: Promise<{ i
           bilder,
           lat: bolig.lat?.toString() ?? "",
           lng: bolig.lng?.toString() ?? "",
-          aktiv: bolig.aktiv,
+          status: bolig.status,
         }}
       />
     </div>

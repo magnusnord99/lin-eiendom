@@ -57,3 +57,23 @@ export const STATUS_LABELS: Record<EiendomStatus, string> = {
   til_salgs: "Til salgs",
   solgt: "Solgt",
 };
+
+export function statusLabel(status: string): string {
+  return erGyldigStatus(status) ? STATUS_LABELS[status] : status;
+}
+
+export function validerStatusForSkriving(status: unknown, type: string): string | null {
+  if (!erGyldigStatus(status)) return "Ugyldig eller manglende status.";
+  if (!erStatusGyldigForType(status, type)) return `Status "${status}" er ikke gyldig for type "${type}".`;
+  return null;
+}
+
+export function resolverEffektivStatus(
+  input: { status?: unknown; type?: string },
+  eksisterende?: { status: string; type: string }
+): { status: unknown; type: string } {
+  const type = input.type ?? eksisterende?.type;
+  if (!type) throw new Error("Mangler type for statusvalidering.");
+  const status = input.status ?? eksisterende?.status ?? (type === "leie" ? "klar_for_utleie" : "til_salgs");
+  return { status, type };
+}

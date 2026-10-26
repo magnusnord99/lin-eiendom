@@ -1,6 +1,6 @@
 // lib/eiendom-status.test.ts
 import { describe, it, expect } from "vitest";
-import { erOffentligSynlig, erGyldigStatus, utledStatusFraAktiv, erStatusGyldigForType, ALLE_STATUSER, STATUS_LABELS } from "./eiendom-status";
+import { erOffentligSynlig, erGyldigStatus, utledStatusFraAktiv, erStatusGyldigForType, validerStatusForSkriving, resolverEffektivStatus, ALLE_STATUSER, STATUS_LABELS } from "./eiendom-status";
 
 describe("erOffentligSynlig", () => {
   it.each([
@@ -65,5 +65,38 @@ describe("STATUS_LABELS", () => {
       expect(typeof STATUS_LABELS[status]).toBe("string");
       expect(STATUS_LABELS[status].length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("validerStatusForSkriving", () => {
+  it("godtar en gyldig status for riktig type", () => {
+    expect(validerStatusForSkriving("til_salgs", "salg")).toBeNull();
+  });
+
+  it("avviser tom status", () => {
+    expect(validerStatusForSkriving("", "salg")).toMatch(/status/i);
+  });
+
+  it("avviser ukjent status", () => {
+    expect(validerStatusForSkriving("ferdig", "salg")).toMatch(/status/i);
+  });
+
+  it("avviser en status som ikke passer typen", () => {
+    expect(validerStatusForSkriving("klar_for_utleie", "salg")).toMatch(/type/i);
+  });
+});
+
+describe("resolverEffektivStatus", () => {
+  it("gir et type-kompatibelt default ved opprettelse uten status", () => {
+    expect(resolverEffektivStatus({ type: "leie" })).toEqual({ status: "klar_for_utleie", type: "leie" });
+    expect(resolverEffektivStatus({ type: "salg" })).toEqual({ status: "til_salgs", type: "salg" });
+  });
+
+  it("beholder eksisterende status ved en oppdatering som bare endrer type", () => {
+    expect(resolverEffektivStatus({ type: "leie" }, { status: "til_salgs", type: "salg" })).toEqual({ status: "til_salgs", type: "leie" });
+  });
+
+  it("beholder eksisterende type ved en oppdatering som bare endrer status", () => {
+    expect(resolverEffektivStatus({ status: "under_oppussing" }, { status: "til_salgs", type: "salg" })).toEqual({ status: "under_oppussing", type: "salg" });
   });
 });

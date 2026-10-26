@@ -1,14 +1,15 @@
 import { prisma } from "@/lib/prisma";
+import { erOffentligSynlig, statusLabel, OFFENTLIG_SYNLIGE_STATUSER } from "@/lib/eiendom-status";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
-  const [totalt, salg, leie, aktive] = await Promise.all([
+  const [totalt, salg, leie, synligOffentlig] = await Promise.all([
     prisma.bolig.count(),
     prisma.bolig.count({ where: { type: "salg" } }),
     prisma.bolig.count({ where: { type: "leie" } }),
-    prisma.bolig.count({ where: { aktiv: true } }),
+    prisma.bolig.count({ where: { status: { in: OFFENTLIG_SYNLIGE_STATUSER } } }),
   ]);
 
   const sisteeBoliger = await prisma.bolig.findMany({
@@ -34,7 +35,7 @@ export default async function AdminDashboard() {
           { label: "Totalt boliger", verdi: totalt, farge: "text-[var(--foreground)]" },
           { label: "Til salgs", verdi: salg, farge: "text-[var(--primary)]" },
           { label: "Til leie", verdi: leie, farge: "text-[var(--secondary)]" },
-          { label: "Aktive", verdi: aktive, farge: "text-green-600" },
+          { label: "Synlig offentlig", verdi: synligOffentlig, farge: "text-green-600" },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-xl border border-[var(--border)] p-6">
             <p className="text-[var(--muted)] text-sm mb-1">{stat.label}</p>
@@ -67,9 +68,9 @@ export default async function AdminDashboard() {
                   {bolig.type === "salg" ? "Salg" : "Leie"}
                 </span>
                 <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                  bolig.aktiv ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                  erOffentligSynlig(bolig.status) ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
                 }`}>
-                  {bolig.aktiv ? "Aktiv" : "Inaktiv"}
+                  {statusLabel(bolig.status)}
                 </span>
                 <Link
                   href={`/admin/boliger/${bolig.id}`}

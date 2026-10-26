@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { erOffentligSynlig, statusLabel } from "@/lib/eiendom-status";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -50,9 +51,9 @@ export default async function AdminBoliger() {
                 </td>
                 <td className="px-6 py-4">
                   <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    bolig.aktiv ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                    erOffentligSynlig(bolig.status) ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
                   }`}>
-                    {bolig.aktiv ? "Aktiv" : "Inaktiv"}
+                    {statusLabel(bolig.status)}
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
