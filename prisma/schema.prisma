@@ -40,6 +40,7 @@ model AdminUser {
   navn       String
   rolle      String   @default("eier")
   opprettet  DateTime @default(now())
+  timeregistreringer Timeregistrering[]
 }
 
 model Delprosjekt {
@@ -52,6 +53,20 @@ model Delprosjekt {
   status      String   @default("planlagt")
   opprettet   DateTime @default(now())
   oppdatert   DateTime @updatedAt
+  timeregistreringer Timeregistrering[]
+}
+
+model Timeregistrering {
+  id            Int         @id @default(autoincrement())
+  delprosjektId Int
+  delprosjekt   Delprosjekt @relation(fields: [delprosjektId], references: [id])
+  brukerId      Int
+  bruker        AdminUser   @relation(fields: [brukerId], references: [id])
+  dato          DateTime
+  antallTimer   Float
+  beskrivelse   String?
+  opprettet     DateTime    @default(now())
+  oppdatert     DateTime    @updatedAt
 }
 
 model Henvendelse {
