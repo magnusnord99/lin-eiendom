@@ -30,6 +30,8 @@ model AdminUser {
   id         Int      @id @default(autoincrement())
   brukernavn String   @unique
   passord    String
+  navn       String
+  rolle      String   @default("eier")
   opprettet  DateTime @default(now())
 }
 
