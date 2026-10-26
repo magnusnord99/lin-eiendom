@@ -32,6 +32,7 @@ model Bolig {
   estimertVerdiEtterOppussing  Int?
   delprosjekter Delprosjekt[]
   kapitalinnskudd Kapitalinnskudd[]
+  utgifter Utgift[]
 }
 
 model AdminUser {
@@ -43,6 +44,7 @@ model AdminUser {
   opprettet  DateTime @default(now())
   timeregistreringer Timeregistrering[]
   kapitalinnskudd Kapitalinnskudd[]
+  utgifterBetalt Utgift[] @relation("UtgiftBetaltAv")
 }
 
 model Delprosjekt {
@@ -56,6 +58,7 @@ model Delprosjekt {
   opprettet   DateTime @default(now())
   oppdatert   DateTime @updatedAt
   timeregistreringer Timeregistrering[]
+  utgifter Utgift[]
 }
 
 model Timeregistrering {
@@ -81,6 +84,24 @@ model Kapitalinnskudd {
   belop       Int
   beskrivelse String?
   opprettet   DateTime  @default(now())
+}
+
+model Utgift {
+  id                  Int          @id @default(autoincrement())
+  eiendomId           Int
+  eiendom             Bolig        @relation(fields: [eiendomId], references: [id])
+  delprosjektId       Int?
+  delprosjekt         Delprosjekt? @relation(fields: [delprosjektId], references: [id])
+  dato                DateTime
+  kategori            String
+  beskrivelse         String?
+  leverandor          String?
+  belop               Int
+  betaltAvBrukerId    Int?
+  betaltAvBruker      AdminUser?   @relation("UtgiftBetaltAv", fields: [betaltAvBrukerId], references: [id])
+  kvitteringBilde     Bytes?
+  kvitteringMimeType  String?
+  opprettet           DateTime     @default(now())
 }
 
 model Henvendelse {

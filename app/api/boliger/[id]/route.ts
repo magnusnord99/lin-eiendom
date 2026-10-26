@@ -6,6 +6,7 @@ import { hentOffentligSynligBolig, plukkSkrivbareBoligFelter } from "@/lib/eiend
 import { resolverEffektivStatus, validerStatusForSkriving } from "@/lib/eiendom-status";
 import { harDelprosjekter } from "@/lib/delprosjekt";
 import { harKapitalinnskudd } from "@/lib/kapitalinnskudd";
+import { harUtgifter } from "@/lib/utgift";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -90,6 +91,13 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     );
   }
 
+  if (await harUtgifter(prisma, eiendomId)) {
+    return NextResponse.json(
+      { error: "Kan ikke slette en eiendom med registrerte utgifter." },
+      { status: 409 }
+    );
+  }
+
   try {
     await prisma.bolig.delete({ where: { id: eiendomId } });
   } catch (error) {
@@ -99,7 +107,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     // to fremmednøklene som faktisk slo til.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
       return NextResponse.json(
-        { error: "Kan ikke slette en eiendom med registrerte delprosjekter eller kapitalinnskudd." },
+        { error: "Kan ikke slette en eiendom med registrerte delprosjekter, kapitalinnskudd eller utgifter." },
         { status: 409 }
       );
     }
