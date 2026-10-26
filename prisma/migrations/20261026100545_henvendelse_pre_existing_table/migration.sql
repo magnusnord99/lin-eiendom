@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "Henvendelse" (
+CREATE TABLE IF NOT EXISTS "Henvendelse" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "navn" TEXT NOT NULL,
     "epost" TEXT NOT NULL,

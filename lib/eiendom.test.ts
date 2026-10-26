@@ -50,6 +50,12 @@ describe("hentOffentligSynligBolig", () => {
     expect(await hentOffentligSynligBolig(prisma, bolig.id)).toBeNull();
   });
 
+  it("returnerer null for en ikke-numerisk id uten å spørre databasen", async () => {
+    const prisma = await createTestDb();
+
+    expect(await hentOffentligSynligBolig(prisma, NaN)).toBeNull();
+  });
+
   it("returnerer null når type ikke matcher", async () => {
     const prisma = await createTestDb();
     const bolig = await prisma.bolig.create({ data: { tittel: "Til salgs", adresse: "A", by: "Ålesund", type: "salg", beskrivelse: "", status: "til_salgs" } });

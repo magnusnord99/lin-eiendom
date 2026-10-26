@@ -32,7 +32,8 @@ function krevPassord(miljoVariabel: string): string {
 
 async function main() {
   const dbUrl = process.env.DATABASE_URL ?? "file:./dev.db";
-  const adapter = new PrismaLibSql({ url: dbUrl });
+  const authToken = process.env.TURSO_AUTH_TOKEN;
+  const adapter = new PrismaLibSql({ url: dbUrl, authToken });
   const prisma = new PrismaClient({ adapter });
 
   const users: SeedUser[] = EIERE.map((eier) => ({

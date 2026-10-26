@@ -45,6 +45,10 @@ export async function hentOffentligSynligBolig(
   id: number,
   type?: string
 ): Promise<OffentligBolig | null> {
+  if (!Number.isInteger(id)) {
+    return null;
+  }
+
   return prisma.bolig.findFirst({
     where: {
       id,
