@@ -26,7 +26,7 @@ export async function registrerInnskuddAction(input: {
     return { ok: false, feilmelding: "Ugyldig dato." };
   }
 
-  if (!Number.isInteger(input.belop) || input.belop <= 0) {
+  if (!Number.isInteger(input.belop) || input.belop <= 0 || input.belop > 2_147_483_647) {
     return { ok: false, feilmelding: "Beløp må være et positivt heltall." };
   }
 
@@ -46,14 +46,19 @@ export async function registrerInnskuddAction(input: {
     return { ok: false, feilmelding: "Ugyldig eier." };
   }
 
-  const data = await opprettKapitalinnskudd(prisma, {
-    eiendomId: input.eiendomId,
-    brukerId: input.brukerId,
-    dato,
-    belop: input.belop,
-    beskrivelse: input.beskrivelse,
-  });
-  return { ok: true, data };
+  try {
+    const data = await opprettKapitalinnskudd(prisma, {
+      eiendomId: input.eiendomId,
+      brukerId: input.brukerId,
+      dato,
+      belop: input.belop,
+      beskrivelse: input.beskrivelse,
+    });
+    return { ok: true, data };
+  } catch (err) {
+    console.error("Uventet feil ved registrering av kapitalinnskudd:", err);
+    return { ok: false, feilmelding: "Noe gikk galt. Prøv igjen." };
+  }
 }
 
 export async function slettInnskuddAction(id: number): Promise<HandlingResultat<null>> {

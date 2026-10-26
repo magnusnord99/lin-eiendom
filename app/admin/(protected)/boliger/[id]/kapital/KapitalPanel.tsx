@@ -74,6 +74,10 @@ export default function KapitalPanel({ eiendomId, eiere, innskudd }: KapitalPane
   }
 
   async function handleSlett(id: number) {
+    if (!window.confirm("Er du sikker på at du vil slette dette innskuddet?")) {
+      return;
+    }
+
     setSlettendeId(id);
     setSletteFeil("");
 

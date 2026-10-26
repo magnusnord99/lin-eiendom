@@ -30,6 +30,32 @@ describe("registrerInnskuddAction med innlogget sesjon", () => {
     if (!resultat.ok) expect(resultat.feilmelding).toMatch(/beløp/i);
   });
 
+  it("avviser et negativt beløp", async () => {
+    vi.mocked(getServerSession).mockResolvedValueOnce({ user: { id: "1", role: "eier" } } as never);
+    const resultat = await registrerInnskuddAction({ eiendomId: 1, brukerId: 1, dato: "2026-10-20", belop: -500 });
+    expect(resultat.ok).toBe(false);
+    if (!resultat.ok) expect(resultat.feilmelding).toMatch(/beløp/i);
+  });
+
+  it("avviser et beløp med desimaler", async () => {
+    vi.mocked(getServerSession).mockResolvedValueOnce({ user: { id: "1", role: "eier" } } as never);
+    const resultat = await registrerInnskuddAction({ eiendomId: 1, brukerId: 1, dato: "2026-10-20", belop: 100.5 });
+    expect(resultat.ok).toBe(false);
+    if (!resultat.ok) expect(resultat.feilmelding).toMatch(/beløp/i);
+  });
+
+  it("avviser et beløp over Prismas 32-bit Int-grense", async () => {
+    vi.mocked(getServerSession).mockResolvedValueOnce({ user: { id: "1", role: "eier" } } as never);
+    const resultat = await registrerInnskuddAction({
+      eiendomId: 1,
+      brukerId: 1,
+      dato: "2026-10-20",
+      belop: 2_147_483_648,
+    });
+    expect(resultat.ok).toBe(false);
+    if (!resultat.ok) expect(resultat.feilmelding).toMatch(/beløp/i);
+  });
+
   it("avviser en kalenderdato som ikke finnes (2026-02-30)", async () => {
     vi.mocked(getServerSession).mockResolvedValueOnce({ user: { id: "1", role: "eier" } } as never);
     const resultat = await registrerInnskuddAction({ eiendomId: 1, brukerId: 1, dato: "2026-02-30", belop: 5000 });
@@ -70,6 +96,45 @@ describe("registrerInnskuddAction med innlogget sesjon", () => {
     const resultat = await registrerInnskuddAction({ eiendomId: 1, brukerId: 1, dato: "2026-10-20", belop: 5000 });
     expect(resultat.ok).toBe(false);
     if (!resultat.ok) expect(resultat.feilmelding).toMatch(/eier/i);
+  });
+
+  it("avviser når brukeren finnes men ikke har rollen eier", async () => {
+    vi.mocked(getServerSession).mockResolvedValueOnce({ user: { id: "1", role: "eier" } } as never);
+    (prisma as unknown as { bolig: { findUnique: ReturnType<typeof vi.fn> } }).bolig = {
+      findUnique: vi.fn().mockResolvedValue({ id: 1 }),
+    };
+    (prisma as unknown as { adminUser: { findUnique: ReturnType<typeof vi.fn> } }).adminUser = {
+      findUnique: vi.fn().mockResolvedValue({ id: 1, rolle: "annet" }),
+    };
+    const resultat = await registrerInnskuddAction({ eiendomId: 1, brukerId: 1, dato: "2026-10-20", belop: 5000 });
+    expect(resultat.ok).toBe(false);
+    if (!resultat.ok) expect(resultat.feilmelding).toMatch(/eier/i);
+  });
+
+  it("krediterer den valgte eieren (brukerId), ikke den innloggede brukeren", async () => {
+    vi.mocked(getServerSession).mockResolvedValueOnce({ user: { id: "9", role: "eier" } } as never);
+    (prisma as unknown as { bolig: { findUnique: ReturnType<typeof vi.fn> } }).bolig = {
+      findUnique: vi.fn().mockResolvedValue({ id: 1 }),
+    };
+    (prisma as unknown as { adminUser: { findUnique: ReturnType<typeof vi.fn> } }).adminUser = {
+      findUnique: vi.fn().mockResolvedValue({ id: 2, rolle: "eier" }),
+    };
+    const create = vi.fn().mockResolvedValue({ id: 1 });
+    (prisma as unknown as { kapitalinnskudd: { create: ReturnType<typeof vi.fn> } }).kapitalinnskudd = {
+      create,
+    };
+
+    const resultat = await registrerInnskuddAction({
+      eiendomId: 1,
+      brukerId: 2,
+      dato: "2026-10-20",
+      belop: 5000,
+    });
+
+    expect(resultat.ok).toBe(true);
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ brukerId: 2 }) })
+    );
   });
 });
 
