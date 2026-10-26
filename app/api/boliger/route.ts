@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { krevInnloggetSesjon } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
@@ -21,8 +20,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "Ikke autorisert" }, { status: 401 });
+  const bruker = await krevInnloggetSesjon();
+  if (!bruker) return NextResponse.json({ error: "Ikke autorisert" }, { status: 401 });
 
   const data = await req.json();
   const bolig = await prisma.bolig.create({ data });

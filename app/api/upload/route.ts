@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { krevInnloggetSesjon } from "@/lib/auth";
 import { writeFile } from "fs/promises";
 import path from "path";
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({ error: "Ikke autorisert" }, { status: 401 });
+  const bruker = await krevInnloggetSesjon();
+  if (!bruker) return NextResponse.json({ error: "Ikke autorisert" }, { status: 401 });
 
   const formData = await req.formData();
   const file = formData.get("file") as File;
