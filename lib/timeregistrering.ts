@@ -36,7 +36,7 @@ export async function hentTimerForEiendom(
   const rader = await prisma.timeregistrering.findMany({
     where: { delprosjekt: { eiendomId } },
     include: { delprosjekt: true, bruker: true },
-    orderBy: { dato: "desc" },
+    orderBy: [{ dato: "desc" }, { id: "desc" }],
   });
 
   return rader.map((rad) => ({

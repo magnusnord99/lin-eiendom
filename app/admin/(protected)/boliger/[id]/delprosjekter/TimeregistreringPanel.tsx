@@ -56,37 +56,47 @@ export default function TimeregistreringPanel({
     setLaster(true);
     setFeil("");
 
-    const resultat = await registrerTimerAction({
-      eiendomId,
-      delprosjektId: Number(effectiveDelprosjektId),
-      dato,
-      antallTimer: Number(antallTimer),
-      beskrivelse: beskrivelse || undefined,
-    });
+    try {
+      const resultat = await registrerTimerAction({
+        eiendomId,
+        delprosjektId: Number(effectiveDelprosjektId),
+        dato,
+        antallTimer: Number(antallTimer),
+        beskrivelse: beskrivelse || undefined,
+      });
 
-    if (resultat.ok) {
-      setDato(dagensDatoOslo());
-      setAntallTimer("");
-      setBeskrivelse("");
-      router.refresh();
-    } else {
-      setFeil(resultat.feilmelding);
+      if (resultat.ok) {
+        setDato(dagensDatoOslo());
+        setAntallTimer("");
+        setBeskrivelse("");
+        router.refresh();
+      } else {
+        setFeil(resultat.feilmelding);
+      }
+    } catch {
+      setFeil("Noe gikk galt. Prøv igjen.");
+    } finally {
+      setLaster(false);
     }
-    setLaster(false);
   }
 
   async function handleSlett(id: number) {
     setSlettendeId(id);
     setSletteFeil("");
 
-    const resultat = await slettTimeregistreringAction(id);
+    try {
+      const resultat = await slettTimeregistreringAction(id);
 
-    if (resultat.ok) {
-      router.refresh();
-    } else {
-      setSletteFeil(resultat.feilmelding);
+      if (resultat.ok) {
+        router.refresh();
+      } else {
+        setSletteFeil(resultat.feilmelding);
+      }
+    } catch {
+      setSletteFeil("Noe gikk galt. Prøv igjen.");
+    } finally {
+      setSlettendeId(null);
     }
-    setSlettendeId(null);
   }
 
   if (delprosjekter.length === 0) {

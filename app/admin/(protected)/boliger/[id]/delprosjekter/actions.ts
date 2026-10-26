@@ -40,7 +40,11 @@ export async function registrerTimerAction(input: {
   }
 
   if (!Number.isFinite(input.antallTimer) || input.antallTimer <= 0 || input.antallTimer > 24) {
-    return { ok: false, feilmelding: "Antall timer må være mellom 0 og 24." };
+    return { ok: false, feilmelding: "Antall timer må være mer enn 0 og høyst 24." };
+  }
+
+  if (!Number.isInteger(input.delprosjektId)) {
+    return { ok: false, feilmelding: "Delprosjektet finnes ikke på denne eiendommen." };
   }
 
   const delprosjekt = await prisma.delprosjekt.findUnique({ where: { id: input.delprosjektId } });
