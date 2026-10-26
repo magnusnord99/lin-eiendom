@@ -31,6 +31,7 @@ model Bolig {
   estimertVerdiNa              Int?
   estimertVerdiEtterOppussing  Int?
   delprosjekter Delprosjekt[]
+  kapitalinnskudd Kapitalinnskudd[]
 }
 
 model AdminUser {
@@ -41,6 +42,7 @@ model AdminUser {
   rolle      String   @default("eier")
   opprettet  DateTime @default(now())
   timeregistreringer Timeregistrering[]
+  kapitalinnskudd Kapitalinnskudd[]
 }
 
 model Delprosjekt {
@@ -67,6 +69,18 @@ model Timeregistrering {
   beskrivelse   String?
   opprettet     DateTime    @default(now())
   oppdatert     DateTime    @updatedAt
+}
+
+model Kapitalinnskudd {
+  id          Int       @id @default(autoincrement())
+  eiendomId   Int
+  eiendom     Bolig     @relation(fields: [eiendomId], references: [id])
+  brukerId    Int
+  bruker      AdminUser @relation(fields: [brukerId], references: [id])
+  dato        DateTime
+  belop       Int
+  beskrivelse String?
+  opprettet   DateTime  @default(now())
 }
 
 model Henvendelse {
