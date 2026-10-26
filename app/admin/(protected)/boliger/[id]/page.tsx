@@ -22,6 +22,10 @@ export default async function RedigerBoligPage({ params }: { params: Promise<{ i
         </Link>
         <span className="text-[var(--muted)]">/</span>
         <h1 className="text-2xl font-bold text-[var(--foreground)]">Rediger bolig</h1>
+        <span className="text-[var(--muted)]">/</span>
+        <Link href={`/admin/boliger/${bolig.id}/delprosjekter`} className="text-sm text-[var(--primary)] hover:underline">
+          Delprosjekter
+        </Link>
       </div>
       <BoligSkjema
         initial={{

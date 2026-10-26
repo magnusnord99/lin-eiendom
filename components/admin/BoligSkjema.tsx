@@ -141,6 +141,13 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
     if (res.ok) {
       router.push("/admin/boliger");
       router.refresh();
+    } else {
+      let feilmelding = "Noe gikk galt. Prøv igjen.";
+      try {
+        const data = await res.json();
+        feilmelding = data.error ?? feilmelding;
+      } catch {}
+      setFeil(feilmelding);
     }
   }
 

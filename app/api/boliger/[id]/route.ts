@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { krevInnloggetSesjon } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/app/generated/prisma/client";
 import { hentOffentligSynligBolig } from "@/lib/eiendom";
 import { resolverEffektivStatus, validerStatusForSkriving } from "@/lib/eiendom-status";
+import { harDelprosjekter } from "@/lib/delprosjekt";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -68,6 +70,31 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!bruker) return NextResponse.json({ error: "Ikke autorisert" }, { status: 401 });
 
   const { id } = await params;
-  await prisma.bolig.delete({ where: { id: parseInt(id) } });
+  const eiendomId = parseInt(id);
+
+  // Rask vei: sjekk først om det finnes delprosjekter, så vi normalt kan
+  // returnere en forklarlig 409 uten å gå via databasefeilen.
+  if (await harDelprosjekter(prisma, eiendomId)) {
+    return NextResponse.json(
+      { error: "Kan ikke slette en eiendom med registrerte delprosjekter." },
+      { status: 409 }
+    );
+  }
+
+  try {
+    await prisma.bolig.delete({ where: { id: eiendomId } });
+  } catch (error) {
+    // Kappløp: et delprosjekt kan ha blitt opprettet mellom sjekken over og
+    // selve slettingen. Fang fremmednøkkel-feilen og svar likt som forhåndssjekken,
+    // i stedet for en ukontrollert 500.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
+      return NextResponse.json(
+        { error: "Kan ikke slette en eiendom med registrerte delprosjekter." },
+        { status: 409 }
+      );
+    }
+    throw error;
+  }
+
   return NextResponse.json({ ok: true });
 }

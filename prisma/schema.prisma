@@ -30,6 +30,7 @@ model Bolig {
   finansiering                 String?
   estimertVerdiNa              Int?
   estimertVerdiEtterOppussing  Int?
+  delprosjekter Delprosjekt[]
 }
 
 model AdminUser {
@@ -39,6 +40,18 @@ model AdminUser {
   navn       String
   rolle      String   @default("eier")
   opprettet  DateTime @default(now())
+}
+
+model Delprosjekt {
+  id          Int      @id @default(autoincrement())
+  eiendomId   Int
+  eiendom     Bolig    @relation(fields: [eiendomId], references: [id])
+  navn        String
+  beskrivelse String?
+  budsjett    Int?
+  status      String   @default("planlagt")
+  opprettet   DateTime @default(now())
+  oppdatert   DateTime @updatedAt
 }
 
 model Henvendelse {
