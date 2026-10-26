@@ -4,19 +4,6 @@
   - Added the required column `navn` to the `AdminUser` table without a default value. This is not possible if the table is not empty.
 
 */
--- CreateTable
-CREATE TABLE "Henvendelse" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "navn" TEXT NOT NULL,
-    "epost" TEXT NOT NULL,
-    "telefon" TEXT,
-    "adresse" TEXT,
-    "tilstand" TEXT,
-    "melding" TEXT NOT NULL,
-    "lest" BOOLEAN NOT NULL DEFAULT false,
-    "opprettet" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
 -- RedefineTables
 PRAGMA defer_foreign_keys=ON;
 PRAGMA foreign_keys=OFF;
