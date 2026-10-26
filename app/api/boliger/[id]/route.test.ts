@@ -9,17 +9,22 @@ const { prismaMock } = vi.hoisted(() => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    delprosjekt: {
+      count: vi.fn(),
+    },
   },
 }));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("next-auth", () => ({ getServerSession: vi.fn().mockResolvedValue({ user: { id: "1", role: "eier" }, expires: "" }) }));
 
-import { PUT } from "./route";
+import { PUT, DELETE } from "./route";
+import { Prisma } from "@/app/generated/prisma/client";
 
 // Mockene deles mellom testene; nullstill dem så kall fra én test ikke lekker inn
 // i en annens `not.toHaveBeenCalled()`-forventning.
 beforeEach(() => {
   for (const fn of Object.values(prismaMock.bolig)) fn.mockReset();
+  prismaMock.delprosjekt.count.mockReset();
 });
 
 describe("PUT /api/boliger/[id]", () => {
@@ -126,5 +131,38 @@ describe("PUT /api/boliger/[id]", () => {
     expect(res.status).toBe(200);
     expect(prismaMock.bolig.update).toHaveBeenCalledWith({ where: { id: 1 }, data: { tittel: "Oppdatert tittel" } });
     expect(prismaMock.bolig.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("DELETE /api/boliger/[id]", () => {
+  it("gir 409 (rask vei) hvis eiendommen har registrerte delprosjekter, og sletter aldri", async () => {
+    prismaMock.delprosjekt.count.mockResolvedValue(1);
+
+    const req = new Request("http://localhost/api/boliger/1", { method: "DELETE" });
+    const res = await DELETE(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(body.error).toBe("Kan ikke slette en eiendom med registrerte delprosjekter.");
+    expect(prismaMock.bolig.delete).not.toHaveBeenCalled();
+  });
+
+  it("gir 409 (ikke en ufanget 500) hvis et delprosjekt opprettes i kappløpet mellom sjekk og sletting", async () => {
+    // Ingen delprosjekter ved sjekk-tidspunktet, men selve slettingen feiler med en
+    // fremmednøkkel-feil (P2003) fordi noe ble opprettet i mellomtiden.
+    prismaMock.delprosjekt.count.mockResolvedValue(0);
+    prismaMock.bolig.delete.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("Foreign key constraint failed", {
+        code: "P2003",
+        clientVersion: "7.6.0",
+      })
+    );
+
+    const req = new Request("http://localhost/api/boliger/1", { method: "DELETE" });
+    const res = await DELETE(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(body.error).toBe("Kan ikke slette en eiendom med registrerte delprosjekter.");
   });
 });
