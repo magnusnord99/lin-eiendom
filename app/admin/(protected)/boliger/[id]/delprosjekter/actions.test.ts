@@ -5,6 +5,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
+import { TIMEREGISTRERING_EIER_FEIL } from "@/lib/timeregistrering";
 import { opprettDelprosjektAction, registrerTimerAction, slettTimeregistreringAction } from "./actions";
 
 describe("opprettDelprosjektAction", () => {
@@ -71,5 +72,20 @@ describe("slettTimeregistreringAction med innlogget sesjon", () => {
     vi.mocked(getServerSession).mockResolvedValueOnce({ user: { id: "1", role: "eier" } } as never);
     const resultat = await slettTimeregistreringAction(undefined as unknown as number);
     expect(resultat.ok).toBe(false);
+    if (!resultat.ok) expect(resultat.feilmelding).toBe(TIMEREGISTRERING_EIER_FEIL);
+  });
+
+  it("oversetter en uventet databasefeil til en generisk feilmelding", async () => {
+    vi.mocked(getServerSession).mockResolvedValueOnce({ user: { id: "1", role: "eier" } } as never);
+    (prisma as unknown as { timeregistrering: { deleteMany: ReturnType<typeof vi.fn> } }).timeregistrering = {
+      deleteMany: vi.fn().mockRejectedValue(new Error("boom")),
+    };
+    const resultat = await slettTimeregistreringAction(1);
+    expect(resultat.ok).toBe(false);
+    if (!resultat.ok) {
+      expect(resultat.feilmelding).toBe("Noe gikk galt. Prøv igjen.");
+      expect(resultat.feilmelding).not.toBe("boom");
+      expect(resultat.feilmelding).not.toBe(TIMEREGISTRERING_EIER_FEIL);
+    }
   });
 });
