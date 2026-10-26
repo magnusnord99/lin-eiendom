@@ -604,7 +604,7 @@ Typen, `ALLE_STATUSER` (alle 8 verdiene), `erGyldigStatus` (typeguard: `typeof s
 - [ ] **Step 4: Kjør testen, bekreft at den passerer**
 
 Run: `npx vitest run lib/eiendom-status.test.ts`
-Expected: PASS (25 tester).
+Expected: PASS (33 tester).
 
 - [ ] **Step 5: Legg til feltene i `prisma/schema.prisma`**
 
@@ -893,7 +893,7 @@ Expected: FAIL with "validerStatusForSkriving is not exported".
 - [ ] **Step 9: Kjør testen, bekreft at den passerer**
 
 Run: `npx vitest run lib/eiendom-status.test.ts`
-Expected: PASS (32 tester).
+Expected: PASS (40 tester).
 
 **Bakgrunn (claudex-runden, runde 3, F17):** Å alltid skrive det resolverte `status`/`type`-paret tilbake i en `update` er en lost-update-felle: hvis forespørsel A bare redigerer `tittel` mens den fortsatt har den gamle statusen i hånden, og forespørsel B i mellomtiden endrer status, overskriver As skriving stille Bs endring. Fiksen er en betinget (optimistisk) oppdatering som bare lykkes hvis raden fortsatt har den statusen/typen A faktisk leste.
 
