@@ -4,8 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hentTimerForEiendom } from "@/lib/timeregistrering";
+import { hentUtgifterForEiendom, beregnFaktiskPerDelprosjekt } from "@/lib/utgift";
 import NyttDelprosjektSkjema from "./NyttDelprosjektSkjema";
 import TimeregistreringPanel from "./TimeregistreringPanel";
+import UtgiftPanel from "./UtgiftPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +35,27 @@ export default async function DelprosjekterPage({ params }: { params: Promise<{ 
     brukerNavn: t.brukerNavn,
   }));
 
+  const eiere = await prisma.adminUser.findMany({
+    where: { rolle: "eier" },
+    select: { id: true, navn: true },
+    orderBy: { navn: "asc" },
+  });
+  const utgiftRader = await hentUtgifterForEiendom(prisma, eiendomId);
+  const utgifter = utgiftRader.map((u) => ({
+    id: u.id,
+    dato: u.dato.toISOString().slice(0, 10),
+    kategori: u.kategori,
+    beskrivelse: u.beskrivelse,
+    leverandor: u.leverandor,
+    belop: u.belop,
+    harKvittering: u.harKvittering,
+    delprosjektId: u.delprosjektId,
+    delprosjektNavn: u.delprosjektNavn,
+    betaltAvBrukerId: u.betaltAvBrukerId,
+    betaltAvNavn: u.betaltAvNavn,
+  }));
+  const faktiskMap = await beregnFaktiskPerDelprosjekt(prisma, eiendomId);
+
   return (
     <div>
       <div className="flex items-center gap-3 mb-8">
@@ -58,17 +81,22 @@ export default async function DelprosjekterPage({ params }: { params: Promise<{ 
           <p className="text-sm text-[var(--muted)]">Ingen delprosjekter registrert.</p>
         ) : (
           <ul className="divide-y divide-[var(--border)]">
-            {eiendom.delprosjekter.map((d) => (
-              <li key={d.id} className="py-3 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-[var(--foreground)]">{d.navn}</p>
-                  <p className="text-xs text-[var(--muted)]">{d.status}</p>
-                </div>
-                <p className="text-sm text-[var(--foreground)]">
-                  {d.budsjett != null ? new Intl.NumberFormat("nb-NO").format(d.budsjett) + " kr" : "–"}
-                </p>
-              </li>
-            ))}
+            {eiendom.delprosjekter.map((d) => {
+              const faktisk = faktiskMap.get(d.id) ?? 0;
+              return (
+                <li key={d.id} className="py-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-[var(--foreground)]">{d.navn}</p>
+                    <p className="text-xs text-[var(--muted)]">{d.status}</p>
+                  </div>
+                  <p className="text-sm text-[var(--foreground)]">
+                    {d.budsjett != null
+                      ? `${new Intl.NumberFormat("nb-NO").format(faktisk)} / ${new Intl.NumberFormat("nb-NO").format(d.budsjett)} kr`
+                      : "–"}
+                  </p>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
@@ -80,6 +108,16 @@ export default async function DelprosjekterPage({ params }: { params: Promise<{ 
           delprosjekter={eiendom.delprosjekter.map((d) => ({ id: d.id, navn: d.navn }))}
           timer={timer}
           naavarendeBrukerId={naavarendeBrukerId}
+        />
+      </div>
+
+      <div className="bg-white rounded-xl border border-[var(--border)] p-6 mt-8">
+        <h2 className="font-semibold text-[var(--foreground)] mb-5">Utgifter</h2>
+        <UtgiftPanel
+          eiendomId={eiendomId}
+          delprosjekter={eiendom.delprosjekter.map((d) => ({ id: d.id, navn: d.navn }))}
+          eiere={eiere.map((e) => ({ id: e.id, navn: e.navn }))}
+          utgifter={utgifter}
         />
       </div>
     </div>
