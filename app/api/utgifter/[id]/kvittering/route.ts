@@ -8,11 +8,18 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   if (!bruker) return NextResponse.json({ error: "Ikke autorisert" }, { status: 401 });
 
   const { id } = await params;
-  const kvittering = await hentKvittering(prisma, parseInt(id));
+  const parsedId = parseInt(id);
+  if (!Number.isInteger(parsedId)) return NextResponse.json({ error: "Ugyldig id." }, { status: 400 });
+
+  const kvittering = await hentKvittering(prisma, parsedId);
   if (!kvittering) return NextResponse.json({ error: UTGIFT_FEIL }, { status: 404 });
 
   return new NextResponse(new Uint8Array(kvittering.bytes), {
-    headers: { "Content-Type": kvittering.mimeType, "X-Content-Type-Options": "nosniff" },
+    headers: {
+      "Content-Type": kvittering.mimeType,
+      "X-Content-Type-Options": "nosniff",
+      "Cache-Control": "private, no-store",
+    },
   });
 }
 
@@ -21,14 +28,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!bruker) return NextResponse.json({ error: "Ikke autorisert" }, { status: 401 });
 
   const { id } = await params;
+  const parsedId = parseInt(id);
+  if (!Number.isInteger(parsedId)) return NextResponse.json({ error: "Ugyldig id." }, { status: 400 });
+
   const formData = await req.formData();
-  const file = formData.get("file") as File | null;
-  if (!file) return NextResponse.json({ error: "Ingen fil" }, { status: 400 });
+  const file = formData.get("file");
+  if (!(file instanceof File)) return NextResponse.json({ error: "Ingen fil" }, { status: 400 });
+
+  if (file.size > 4_000_000) {
+    return NextResponse.json({ error: UTGIFT_KVITTERING_FOR_STOR }, { status: 413 });
+  }
 
   const bytes = Buffer.from(await file.arrayBuffer());
 
   try {
-    await lagreKvittering(prisma, parseInt(id), bytes);
+    await lagreKvittering(prisma, parsedId, bytes);
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof Error && err.message === UTGIFT_KVITTERING_FOR_STOR) {

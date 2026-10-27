@@ -101,10 +101,10 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   try {
     await prisma.bolig.delete({ where: { id: eiendomId } });
   } catch (error) {
-    // Kappløp: et delprosjekt eller kapitalinnskudd kan ha blitt opprettet mellom
-    // sjekkene over og selve slettingen. Fang fremmednøkkel-feilen og svar med en
-    // generisk 409, i stedet for en ukontrollert 500. Vi vet her ikke hvilken av de
-    // to fremmednøklene som faktisk slo til.
+    // Kappløp: et delprosjekt, kapitalinnskudd eller utgift kan ha blitt opprettet
+    // mellom sjekkene over og selve slettingen. Fang fremmednøkkel-feilen og svar med
+    // en generisk 409, i stedet for en ukontrollert 500. Vi vet her ikke hvilken av de
+    // tre fremmednøklene som faktisk slo til.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
       return NextResponse.json(
         { error: "Kan ikke slette en eiendom med registrerte delprosjekter, kapitalinnskudd eller utgifter." },

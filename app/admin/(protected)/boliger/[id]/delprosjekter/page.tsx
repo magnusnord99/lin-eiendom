@@ -35,7 +35,11 @@ export default async function DelprosjekterPage({ params }: { params: Promise<{ 
     brukerNavn: t.brukerNavn,
   }));
 
-  const eiere = await prisma.adminUser.findMany({ where: { rolle: "eier" }, select: { id: true, navn: true } });
+  const eiere = await prisma.adminUser.findMany({
+    where: { rolle: "eier" },
+    select: { id: true, navn: true },
+    orderBy: { navn: "asc" },
+  });
   const utgiftRader = await hentUtgifterForEiendom(prisma, eiendomId);
   const utgifter = utgiftRader.map((u) => ({
     id: u.id,

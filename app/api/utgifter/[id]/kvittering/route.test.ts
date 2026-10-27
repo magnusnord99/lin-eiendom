@@ -61,6 +61,16 @@ describe("GET /api/utgifter/[id]/kvittering", () => {
     expect(body.equals(bytes)).toBe(true);
     expect(res.headers.get("Content-Type")).toBe("image/png");
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(res.headers.get("Cache-Control")).toBe("private, no-store");
+  });
+
+  it("gir 400 for en ikke-numerisk id, og kaller aldri hentKvittering", async () => {
+    const res = await GET(new Request("http://localhost/api/utgifter/abc/kvittering") as any, paramsFor("abc") as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(body.error).toBe("Ugyldig id.");
+    expect(utgiftMock.hentKvittering).not.toHaveBeenCalled();
   });
 });
 
@@ -86,6 +96,58 @@ describe("POST /api/utgifter/[id]/kvittering", () => {
 
     expect(res.status).toBe(400);
     expect(body.error).toBe("Ingen fil");
+    expect(utgiftMock.lagreKvittering).not.toHaveBeenCalled();
+  });
+
+  it("gir 400 for en ikke-numerisk id, og kaller aldri lagreKvittering", async () => {
+    const formData = new FormData();
+    formData.append("file", new File([new Uint8Array([1, 2, 3])], "kvittering.jpg", { type: "image/jpeg" }));
+    const req = new Request("http://localhost/api/utgifter/abc/kvittering", { method: "POST", body: formData });
+
+    const res = await POST(req as any, paramsFor("abc") as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(body.error).toBe("Ugyldig id.");
+    expect(utgiftMock.lagreKvittering).not.toHaveBeenCalled();
+  });
+
+  it("gir 400 'Ingen fil' når file-feltet finnes men ikke er en fil, og kaller aldri lagreKvittering", async () => {
+    const req = {
+      formData: async () => ({
+        get: (key: string) => (key === "file" ? "ikke-en-fil" : null),
+      }),
+    };
+
+    const res = await POST(req as any, paramsFor("1") as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(body.error).toBe("Ingen fil");
+    expect(utgiftMock.lagreKvittering).not.toHaveBeenCalled();
+  });
+
+  it("gir 413 for en for stor fil uten å lese body, og kaller aldri lagreKvittering", async () => {
+    class OversizedFile extends File {
+      get size() {
+        return 5_000_000;
+      }
+    }
+    const file = new OversizedFile([], "stor.jpg", { type: "image/jpeg" });
+    const arrayBufferSpy = vi.spyOn(file, "arrayBuffer");
+
+    const req = {
+      formData: async () => ({
+        get: (key: string) => (key === "file" ? file : null),
+      }),
+    };
+
+    const res = await POST(req as any, paramsFor("1") as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(413);
+    expect(body.error).toBe(UTGIFT_KVITTERING_FOR_STOR);
+    expect(arrayBufferSpy).not.toHaveBeenCalled();
     expect(utgiftMock.lagreKvittering).not.toHaveBeenCalled();
   });
 
