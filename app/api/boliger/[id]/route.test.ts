@@ -18,6 +18,9 @@ const { prismaMock } = vi.hoisted(() => ({
     utgift: {
       count: vi.fn(),
     },
+    dokument: {
+      count: vi.fn(),
+    },
   },
 }));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
@@ -33,6 +36,7 @@ beforeEach(() => {
   prismaMock.delprosjekt.count.mockReset();
   prismaMock.kapitalinnskudd.count.mockReset();
   prismaMock.utgift.count.mockReset();
+  prismaMock.dokument.count.mockReset();
 });
 
 describe("PUT /api/boliger/[id]", () => {
@@ -209,6 +213,7 @@ describe("DELETE /api/boliger/[id]", () => {
     prismaMock.delprosjekt.count.mockResolvedValue(0);
     prismaMock.kapitalinnskudd.count.mockResolvedValue(0);
     prismaMock.utgift.count.mockResolvedValue(0);
+    prismaMock.dokument.count.mockResolvedValue(0);
     prismaMock.bolig.delete.mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError("Foreign key constraint failed", {
         code: "P2003",
@@ -221,7 +226,9 @@ describe("DELETE /api/boliger/[id]", () => {
     const body = await res.json();
 
     expect(res.status).toBe(409);
-    expect(body.error).toBe("Kan ikke slette en eiendom med registrerte delprosjekter, kapitalinnskudd eller utgifter.");
+    expect(body.error).toBe(
+      "Kan ikke slette en eiendom med registrerte delprosjekter, kapitalinnskudd, utgifter eller dokumenter."
+    );
   });
 
   it("gir 409 (rask vei) hvis eiendommen har registrerte kapitalinnskudd, og sletter aldri", async () => {
@@ -248,6 +255,21 @@ describe("DELETE /api/boliger/[id]", () => {
 
     expect(res.status).toBe(409);
     expect(body.error).toBe("Kan ikke slette en eiendom med registrerte utgifter.");
+    expect(prismaMock.bolig.delete).not.toHaveBeenCalled();
+  });
+
+  it("gir 409 (rask vei) hvis eiendommen har registrerte dokumenter, og sletter aldri", async () => {
+    prismaMock.delprosjekt.count.mockResolvedValue(0);
+    prismaMock.kapitalinnskudd.count.mockResolvedValue(0);
+    prismaMock.utgift.count.mockResolvedValue(0);
+    prismaMock.dokument.count.mockResolvedValue(1);
+
+    const req = new Request("http://localhost/api/boliger/1", { method: "DELETE" });
+    const res = await DELETE(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(body.error).toBe("Kan ikke slette en eiendom med registrerte dokumenter.");
     expect(prismaMock.bolig.delete).not.toHaveBeenCalled();
   });
 });
