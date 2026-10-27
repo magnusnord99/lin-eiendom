@@ -21,6 +21,8 @@ interface BoligData {
   lat: string;
   lng: string;
   status: string;
+  kjopesum: string;
+  salgssum: string;
 }
 
 interface BoligSkjemaProps {
@@ -43,6 +45,8 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
     lat: initial?.lat?.toString() ?? "",
     lng: initial?.lng?.toString() ?? "",
     status: initial?.status ?? ((initial?.type ?? "salg") === "leie" ? "klar_for_utleie" : "til_salgs"),
+    kjopesum: initial?.kjopesum?.toString() ?? "",
+    salgssum: initial?.salgssum?.toString() ?? "",
   });
 
   const [laster, setLaster] = useState(false);
@@ -107,6 +111,8 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
       rom: form.rom ? parseInt(form.rom) : null,
       bad: form.bad ? parseInt(form.bad) : null,
       beskrivelse: form.beskrivelse,
+      kjopesum: form.kjopesum ? parseInt(form.kjopesum) : null,
+      salgssum: form.salgssum ? parseInt(form.salgssum) : null,
       bilder: JSON.stringify(form.bilder),
       lat: form.lat ? parseFloat(form.lat) : null,
       lng: form.lng ? parseFloat(form.lng) : null,
@@ -205,6 +211,23 @@ export default function BoligSkjema({ initial }: BoligSkjemaProps) {
           <div className="md:col-span-3">
             <label className={labelKlasse}>Beskrivelse *</label>
             <textarea required value={form.beskrivelse} onChange={(e) => oppdater("beskrivelse", e.target.value)} rows={5} className={inputKlasse + " resize-none"} placeholder="Beskriv boligen..." />
+          </div>
+        </div>
+      </div>
+
+      {/* Økonomi (internt) */}
+      <div className="bg-white rounded-xl border border-[var(--border)] p-6">
+        <h2 className="font-semibold text-[var(--foreground)] mb-5">Økonomi (internt)</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label className={labelKlasse}>Kjøpesum (kr)</label>
+            <input type="number" value={form.kjopesum} onChange={(e) => oppdater("kjopesum", e.target.value)} className={inputKlasse} placeholder="0" />
+            <p className="text-xs text-[var(--muted)] mt-1">Internt felt. Vises aldri på den offentlige siden.</p>
+          </div>
+          <div>
+            <label className={labelKlasse}>Salgssum (kr)</label>
+            <input type="number" value={form.salgssum} onChange={(e) => oppdater("salgssum", e.target.value)} className={inputKlasse} placeholder="0" />
+            <p className="text-xs text-[var(--muted)] mt-1">Internt felt. Vises aldri på den offentlige siden.</p>
           </div>
         </div>
       </div>

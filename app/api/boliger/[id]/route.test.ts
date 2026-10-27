@@ -141,6 +141,36 @@ describe("PUT /api/boliger/[id]", () => {
     expect(prismaMock.bolig.updateMany).not.toHaveBeenCalled();
   });
 
+  it("avviser en ikke-heltalls kjøpesum med 400, og oppdaterer aldri", async () => {
+    const req = new Request("http://localhost/api/boliger/1", {
+      method: "PUT",
+      body: JSON.stringify({ kjopesum: 4.5 }),
+    });
+
+    const res = await PUT(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(body.error).toBe("Ugyldig kjøpesum.");
+    expect(prismaMock.bolig.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.bolig.update).not.toHaveBeenCalled();
+  });
+
+  it("avviser en negativ salgssum med 400, og oppdaterer aldri", async () => {
+    const req = new Request("http://localhost/api/boliger/1", {
+      method: "PUT",
+      body: JSON.stringify({ salgssum: -1 }),
+    });
+
+    const res = await PUT(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(body.error).toBe("Ugyldig salgssum.");
+    expect(prismaMock.bolig.updateMany).not.toHaveBeenCalled();
+    expect(prismaMock.bolig.update).not.toHaveBeenCalled();
+  });
+
   it("fjerner relasjonsfelt (f.eks. forsøk på å slette andres timeregistreringer) før oppdatering", async () => {
     prismaMock.bolig.findUnique.mockResolvedValueOnce({ id: 1, status: "til_salgs", type: "salg" });
     prismaMock.bolig.update.mockResolvedValue({ id: 1 });

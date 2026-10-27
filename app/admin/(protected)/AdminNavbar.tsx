@@ -40,6 +40,14 @@ export default function AdminNavbar({ brukerNavn }: { brukerNavn: string }) {
               >
                 Henvendelser
               </Link>
+              <Link
+                href="/admin/innstillinger"
+                className={`px-3 py-1.5 rounded text-sm transition-colors ${
+                  pathname.startsWith("/admin/innstillinger") ? "bg-white/20" : "hover:bg-white/10"
+                }`}
+              >
+                Innstillinger
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">
