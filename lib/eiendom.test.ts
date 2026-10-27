@@ -1,7 +1,7 @@
 // lib/eiendom.test.ts
 import { describe, it, expect } from "vitest";
 import { createTestDb } from "../tests/helpers/testDb";
-import { hentOffentligSynligeBoliger, hentOffentligSynligBolig, plukkSkrivbareBoligFelter } from "./eiendom";
+import { hentOffentligSynligeBoliger, hentOffentligSynligBolig, plukkSkrivbareBoligFelter, validerBoligPengefelt } from "./eiendom";
 
 describe("plukkSkrivbareBoligFelter", () => {
   it("beholder alle tillatte felt, inkludert null- og false-verdier", () => {
@@ -16,6 +16,40 @@ describe("plukkSkrivbareBoligFelter", () => {
       ukjentFelt: "noe",
     });
     expect(resultat).toEqual({ tittel: "A" });
+  });
+});
+
+describe("validerBoligPengefelt", () => {
+  it("returnerer null når begge felt er fraværende", () => {
+    expect(validerBoligPengefelt({})).toBeNull();
+  });
+
+  it("returnerer null når begge felt er null", () => {
+    expect(validerBoligPengefelt({ kjopesum: null, salgssum: null })).toBeNull();
+  });
+
+  it("returnerer null for et gyldig kjopesum", () => {
+    expect(validerBoligPengefelt({ kjopesum: 4_000_000 })).toBeNull();
+  });
+
+  it("godtar 4 som et gyldig heltall (kan ikke oppdage parseInt('4e6')-korrupsjon, bare det endelige heltallet)", () => {
+    expect(validerBoligPengefelt({ kjopesum: 4 })).toBeNull();
+  });
+
+  it("returnerer feilmelding for et ikke-heltall kjopesum", () => {
+    expect(validerBoligPengefelt({ kjopesum: 4.5 })).toBe("Ugyldig kjøpesum.");
+  });
+
+  it("returnerer feilmelding for et negativt salgssum", () => {
+    expect(validerBoligPengefelt({ salgssum: -1 })).toBe("Ugyldig salgssum.");
+  });
+
+  it("returnerer feilmelding for et salgssum én over øvre grense", () => {
+    expect(validerBoligPengefelt({ salgssum: 2_147_483_648 })).toBe("Ugyldig salgssum.");
+  });
+
+  it("godtar et kjopesum nøyaktig på øvre grense", () => {
+    expect(validerBoligPengefelt({ kjopesum: 2_147_483_647 })).toBeNull();
   });
 });
 
@@ -49,12 +83,13 @@ describe("hentOffentligSynligeBoliger", () => {
 
   it("eksponerer ikke interne felt som kjopesum eller finansiering", async () => {
     const prisma = await createTestDb();
-    await prisma.bolig.create({ data: { tittel: "Til salgs", adresse: "A", by: "Ålesund", type: "salg", beskrivelse: "", status: "til_salgs", kjopesum: 4000000, finansiering: "Lån i banken" } });
+    await prisma.bolig.create({ data: { tittel: "Til salgs", adresse: "A", by: "Ålesund", type: "salg", beskrivelse: "", status: "til_salgs", kjopesum: 4000000, finansiering: "Lån i banken", salgssum: 4500000 } });
 
     const [bolig] = await hentOffentligSynligeBoliger(prisma);
 
     expect(bolig).not.toHaveProperty("kjopesum");
     expect(bolig).not.toHaveProperty("finansiering");
+    expect(bolig).not.toHaveProperty("salgssum");
   });
 });
 

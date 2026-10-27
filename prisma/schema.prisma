@@ -30,9 +30,16 @@ model Bolig {
   finansiering                 String?
   estimertVerdiNa              Int?
   estimertVerdiEtterOppussing  Int?
+  salgssum                     Int?
   delprosjekter Delprosjekt[]
   kapitalinnskudd Kapitalinnskudd[]
   utgifter Utgift[]
+}
+
+model Innstilling {
+  id                       Int   @id @default(1)
+  arbeidstimerAndelProsent Float @default(10)
+  kapitalAndelProsent      Float @default(10)
 }
 
 model AdminUser {
