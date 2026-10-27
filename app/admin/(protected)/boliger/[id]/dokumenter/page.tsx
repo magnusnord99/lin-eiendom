@@ -6,6 +6,16 @@ import DokumentPanel from "./DokumentPanel";
 
 export const dynamic = "force-dynamic";
 
+// `Dokument.opprettet` is a real DateTime (unlike the plain user-entered `dato`
+// fields on sibling pages, which are midnight-UTC and safe to truncate with
+// `.toISOString().slice(0, 10)`). Truncating a timestamp's ISO string would show
+// the UTC calendar date, which can be a day behind the Europe/Oslo calendar date
+// for anything uploaded late evening Oslo time — so this converts via the Oslo
+// timezone first, same technique as `dagensDatoOslo()` in the sibling panels.
+function datoOsloISO(dato: Date): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Oslo" }).format(dato);
+}
+
 export default async function DokumenterPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const eiendomId = parseInt(id);
@@ -24,7 +34,7 @@ export default async function DokumenterPage({ params }: { params: Promise<{ id:
     navn: d.navn,
     mimeType: d.mimeType,
     storrelse: d.storrelse,
-    opprettet: d.opprettet.toISOString().slice(0, 10),
+    opprettet: datoOsloISO(d.opprettet),
     delprosjektId: d.delprosjektId,
     delprosjektNavn: d.delprosjektNavn,
     opplastetAvBrukerId: d.opplastetAvBrukerId,
