@@ -23,6 +23,9 @@
 - **If `kjopesum` or `salgssum` is `null` on the Bolig, the fortjeneste cannot be computed at all.** `beregnFortjenestefordeling` returns a `{ beregnet: false; grunn: string }` sentinel in that case (see Task 2's exact type) rather than a nonsensical number (`null - 4000000`, `NaN`, etc.); the page (Task 3) must render that `grunn` as an explanatory message, not attempt to format `undefined` as currency.
 - Any logged-in admin (the existing `getServerSession`/`authOptions` convention used by every sibling action in this codebase) may view the fortjeneste page and edit the `Innstilling` row — there is no role-based access control anywhere else in this codebase yet (§6 of the spec: "Fase 1-brukere er kun de fire eierne, alle med samme rolle/adgang"), so this plan does not invent one.
 - **Any query that lists `AdminUser` rows for display must `select` only `{ id: true, navn: true }`** — same convention as every prior feature in this codebase (`app/admin/(protected)/boliger/[id]/delprosjekter/page.tsx:38-42` is the cleanest existing example; do not copy `kapital/page.tsx:17`'s `findMany` with no `select`, which is a pre-existing minor the final review on the Utgifter plan already flagged and deliberately left unfixed — don't propagate it into new code).
+- **`oppdaterInnstilling` must construct its Prisma `update`/`create` payloads from named fields, never by spreading the validated input object.** `input`'s TypeScript type has only the two percentage fields, but TypeScript does not strip extra properties from an object at runtime — if the Server Action's caller (ultimately a `fetch` body parsed with `JSON.parse`, which has no such type checking) includes an extra `id` field, `create: { id: 1, ...input }` would let it override the hardcoded singleton id. Write `update: { arbeidstimerAndelProsent: input.arbeidstimerAndelProsent, kapitalAndelProsent: input.kapitalAndelProsent }` and `create: { id: 1, arbeidstimerAndelProsent: input.arbeidstimerAndelProsent, kapitalAndelProsent: input.kapitalAndelProsent }` explicitly — never spread `input` into either.
+- **`kjopesum` and `salgssum` must be validated server-side as safe whole-number integers before being written, independent of whatever the client sends.** `parseInt("4e6")` (JavaScript's own behavior, not a typo) returns `4`, not `4,000,000` — it stops at the first non-digit character. Since these two fields feed directly into the fortjeneste calculation, a value corrupted this way would silently overstate or understate a profit figure by millions of kroner with no error anywhere. `lib/eiendom.ts` gets a new exported `validerBoligPengefelt(data: Record<string, unknown>): string | null` (Task 1) that both `POST /api/boliger` and `PUT /api/boliger/[id]` (Task 3) call immediately after `plukkSkrivbareBoligFelter` and before writing, rejecting with a 400 if either field, when present and non-null, is not `Number.isInteger` or falls outside `0 <= verdi <= 2_147_483_647`. This is deliberately narrower than fixing every money-shaped field on `Bolig` (e.g. `pris` has the same latent `parseInt` issue in `BoligSkjema.tsx` already, inherited from before this plan) — only `kjopesum`/`salgssum` feed a calculation whose entire purpose is to be verified by hand, which is why they get the explicit server-side guard and `pris` does not, in this plan.
+- **Concurrent edits to `kjopesum`/`salgssum` via `BoligSkjema` use the same last-write-wins semantics as every other non-status/type field on that form (`tittel`, `adresse`, `pris`, `beskrivelse`, `bilder`, `lat`, `lng`) — this plan does not add per-field optimistic locking for the two new fields.** `PUT /api/boliger/[id]`'s existing optimistic-concurrency check (`app/api/boliger/[id]/route.ts:48-59`) only ever compared `status`/`type`, by original design (see its own comment: "Ingen status/type i forespørselen: ingen samtidighetsrisiko for disse feltene"); extending real conflict protection to two specific fields while leaving every other field on the same form unprotected would be an inconsistent, partial fix to a form-wide architectural characteristic, not a defect this plan introduces. Noted here as a known, accepted limitation to flag to the project owners (two admins editing the same Bolig's finances at the same moment is an edge case for a 4-person internal tool, not a byte-identical risk pattern to the Utgifter feature's finding), not something this plan's tasks fix.
 
 ## Review Focus
 
@@ -41,8 +44,8 @@
 - Create: migration via `npx prisma migrate dev --name add_salgssum_og_innstilling`
 - Create: `lib/innstilling.ts`
 - Test: `lib/innstilling.test.ts`
-- Modify: `lib/eiendom.ts` (add `"salgssum"` to `SKRIVBARE_BOLIG_SKALARFELTER`; do **not** touch `OFFENTLIG_BOLIG_FELTER`)
-- Modify: `lib/eiendom.test.ts` (extend the existing "eksponerer ikke interne felt" test to also cover `salgssum`)
+- Modify: `lib/eiendom.ts` (add `"salgssum"` to `SKRIVBARE_BOLIG_SKALARFELTER`; add `validerBoligPengefelt`; do **not** touch `OFFENTLIG_BOLIG_FELTER`)
+- Modify: `lib/eiendom.test.ts` (extend the existing "eksponerer ikke interne felt" test to also cover `salgssum`; add tests for `validerBoligPengefelt`)
 
 **Interfaces:**
 - Consumes: nothing new from other tasks.
@@ -50,6 +53,7 @@
   - `export const INNSTILLING_FEIL = "Ugyldig prosentfordeling.";`
   - `export async function hentInnstilling(prisma: PrismaClient): Promise<{ arbeidstimerAndelProsent: number; kapitalAndelProsent: number }>` — upserts the singleton row (`id: 1`) with defaults `{ arbeidstimerAndelProsent: 10, kapitalAndelProsent: 10 }` if it doesn't exist yet, then returns its two fields.
   - `export async function oppdaterInnstilling(prisma: PrismaClient, input: { arbeidstimerAndelProsent: number; kapitalAndelProsent: number }): Promise<void>` — validates both constraints below, throws `INNSTILLING_FEIL` on violation, otherwise upserts the singleton row.
+  - `export function validerBoligPengefelt(data: Record<string, unknown>): string | null` (added to `lib/eiendom.ts`) — for each of `"kjopesum"`, `"salgssum"`: if the key is present in `data` and the value is not `null`, it must be `Number.isInteger(verdi) && verdi >= 0 && verdi <= 2_147_483_647`; returns the first violation as a clear Norwegian message (e.g. `"Ugyldig kjøpesum."` / `"Ugyldig salgssum."`), or `null` if both fields pass (or are absent/null).
 
 - [ ] **Step 1: Add `salgssum` and the `Innstilling` model to `prisma/schema.prisma`**
 
@@ -86,6 +90,7 @@ Using `createTestDb()` (the same real-SQLite helper every other `lib/*.test.ts` 
 - `oppdaterInnstilling` with `arbeidstimerAndelProsent: -1, kapitalAndelProsent: 10` throws `INNSTILLING_FEIL`.
 - `oppdaterInnstilling` with `arbeidstimerAndelProsent: 101, kapitalAndelProsent: 0` throws `INNSTILLING_FEIL`.
 - `oppdaterInnstilling` with `arbeidstimerAndelProsent: 50, kapitalAndelProsent: 50` (sum exactly 100) succeeds — the boundary case is valid, not rejected.
+- `oppdaterInnstilling` called with a third, extraneous property on the input object beyond the two declared ones (e.g. cast an object literal containing `id: 2` through `as never`/`as any` to bypass the parameter type, simulating an un-typechecked caller) does not change which row exists — a subsequent `hentInnstilling` still finds/returns the `id: 1` row with the two percentages updated, and no `id: 2` row was created. This is the regression test for the "never spread caller input into the Prisma write" rule above.
 
 - [ ] **Step 4: Run tests to verify they fail**
 
@@ -96,7 +101,17 @@ Expected: FAIL (module `lib/innstilling.ts` does not exist yet).
 
 `hentInnstilling`: `prisma.innstilling.upsert({ where: { id: 1 }, update: {}, create: { id: 1, arbeidstimerAndelProsent: 10, kapitalAndelProsent: 10 } })`, then return `{ arbeidstimerAndelProsent: rad.arbeidstimerAndelProsent, kapitalAndelProsent: rad.kapitalAndelProsent }`.
 
-`oppdaterInnstilling`: validate `Number.isFinite` on both inputs, `0 <= verdi <= 100` for each, and `arbeidstimerAndelProsent + kapitalAndelProsent <= 100`; throw `new Error(INNSTILLING_FEIL)` on any violation before touching the database. On success: `prisma.innstilling.upsert({ where: { id: 1 }, update: input, create: { id: 1, ...input } })`.
+`oppdaterInnstilling`: validate `Number.isFinite` on both inputs, `0 <= verdi <= 100` for each, and `arbeidstimerAndelProsent + kapitalAndelProsent <= 100`; throw `new Error(INNSTILLING_FEIL)` on any violation before touching the database. On success, build the write payload from named fields only — **never spread `input` directly into the Prisma call**, since `input`'s TypeScript type does not stop a caller from passing an extra runtime property (e.g. `id`) that would override the hardcoded singleton row:
+
+```ts
+const felter = {
+  arbeidstimerAndelProsent: input.arbeidstimerAndelProsent,
+  kapitalAndelProsent: input.kapitalAndelProsent,
+};
+await prisma.innstilling.upsert({ where: { id: 1 }, update: felter, create: { id: 1, ...felter } });
+```
+
+(Spreading `felter` — a locally-constructed, exactly-two-key object — is fine; spreading the caller-supplied `input` is what must be avoided.)
 
 - [ ] **Step 6: Run tests to verify they pass**
 
@@ -111,16 +126,25 @@ Add it to the existing array, alongside `kjopesum`. Do not add it to `OFFENTLIG_
 
 Add `salgssum: 4500000` to the `prisma.bolig.create` call in the existing "eksponerer ikke interne felt som kjopesum eller finansiering" test, and add `expect(bolig).not.toHaveProperty("salgssum");` alongside the existing two assertions.
 
-- [ ] **Step 9: Run the full suite and verify everything passes**
+- [ ] **Step 9: Write failing tests for `validerBoligPengefelt` in `lib/eiendom.test.ts`**
+
+Cover: both fields absent → `null`; both fields `null` → `null`; `{ kjopesum: 4_000_000 }` → `null`; `{ kjopesum: 4 }` (the exact silent-corruption value `parseInt("4e6")` would produce) is itself a syntactically valid integer and must still pass — this function cannot detect *how* a bad number was produced, only that the final value is a valid integer in range, so its real job is the next two cases: `{ kjopesum: 4.5 }` (non-integer) → the `"Ugyldig kjøpesum."` message; `{ salgssum: -1 }` → `"Ugyldig salgssum."`; `{ salgssum: 2_147_483_648 }` (one over the ceiling) → `"Ugyldig salgssum."`; `{ kjopesum: 2_147_483_647 }` (exactly at the ceiling) → `null` (boundary is valid).
+
+- [ ] **Step 10: Run to verify failure, then implement `validerBoligPengefelt` in `lib/eiendom.ts`**
+
+Run: `npx vitest run lib/eiendom.test.ts`
+Expected: FAIL, then implement per the Interfaces block above. Re-run to verify PASS.
+
+- [ ] **Step 11: Run the full suite and verify everything passes**
 
 Run: `npx vitest run`
 Expected: PASS (all prior tests plus the new ones)
 
-- [ ] **Step 10: Commit**
+- [ ] **Step 12: Commit**
 
 ```bash
 git add prisma/schema.prisma prisma/migrations lib/innstilling.ts lib/innstilling.test.ts lib/eiendom.ts lib/eiendom.test.ts
-git commit -m "feat: add Bolig.salgssum and configurable Innstilling percentages"
+git commit -m "feat: add Bolig.salgssum, configurable Innstilling percentages, and validerBoligPengefelt"
 ```
 
 ---
@@ -154,6 +178,8 @@ export type FortjenesteResultat =
       likedelProsent: number;
       arbeidstimerAndelProsent: number;
       kapitalAndelProsent: number;
+      arbeidstimerFallbackBrukt: boolean;
+      kapitalFallbackBrukt: boolean;
       perEier: Array<{
         brukerId: number;
         brukerNavn: string;
@@ -171,6 +197,8 @@ export async function beregnFortjenestefordeling(
   eiendomId: number
 ): Promise<FortjenesteResultat>
 ```
+
+`arbeidstimerFallbackBrukt`/`kapitalFallbackBrukt` are `true` exactly when the corresponding pot's zero-denominator equal-split fallback (see Global Constraints) was applied for this eiendom — the page (Task 3) uses these to show a note next to the relevant column rather than leaving the viewer to infer why every eier has the same percentage.
 
 - [ ] **Step 1: Write a failing test for `beregnTotalUtgifter` in `lib/utgift.test.ts`**
 
@@ -196,10 +224,10 @@ Expected: FAIL (module doesn't exist). Implement following the exact structure o
 
 Using `createTestDb()`, set up an eiendom with `kjopesum`/`salgssum`, some `Kapitalinnskudd`, `Timeregistrering`, and `Utgift` rows across 2-4 `rolle: "eier"` AdminUsers, and cover:
 - **Missing data:** `salgssum: null` (or `kjopesum: null`) → returns `{ beregnet: false, grunn: <non-empty string> }`.
-- **Hand-computed happy path:** pick simple round numbers (e.g. `kjopesum: 1_000_000`, `salgssum: 1_500_000`, total utgifter `100_000` → `fortjeneste: 400_000`; two eiere with capital shares `75%`/`25%` and hour shares `40%`/`60%`; `Innstilling` left at the `10/10` default so `likedelProsent: 80`) and assert every field of the result — including that `perEier` sums to exactly `400_000` across its `totalt` values — matches the number you compute by hand in the test itself.
+- **Hand-computed happy path:** pick simple round numbers (e.g. `kjopesum: 1_000_000`, `salgssum: 1_500_000`, total utgifter `100_000` → `fortjeneste: 400_000`; two eiere with capital shares `75%`/`25%` and hour shares `40%`/`60%`; `Innstilling` left at the `10/10` default so `likedelProsent: 80`) and assert every field of the result — including that `perEier` sums to exactly `400_000` across its `totalt` values, and that both `arbeidstimerFallbackBrukt`/`kapitalFallbackBrukt` are `false` — matches the number you compute by hand in the test itself.
 - **Negative fortjeneste:** `salgssum < kjopesum + totalUtgifter` → `fortjeneste` is negative, and each eier's three components and `totalt` come out negative in the same proportions as the positive case (no clamping, no sign flip, no thrown error).
-- **Zero-hours fallback:** no `Timeregistrering` rows at all for the eiendom → every eier's `arbeidsandelProsent` in the result is `100 / antallEiere` (equal split), not `0` — and the sum of `perEier[i].totalt` still equals the overall `fortjeneste` exactly.
-- **Zero-capital fallback:** same as above but for `Kapitalinnskudd` and `kapitalandelProsent`.
+- **Zero-hours fallback:** no `Timeregistrering` rows at all for the eiendom → every eier's `arbeidsandelProsent` in the result is `100 / antallEiere` (equal split), not `0`; `arbeidstimerFallbackBrukt` is `true`, `kapitalFallbackBrukt` is `false` — and the sum of `perEier[i].totalt` still equals the overall `fortjeneste` exactly.
+- **Zero-capital fallback:** same as above but for `Kapitalinnskudd`/`kapitalandelProsent`/`kapitalFallbackBrukt`.
 - **Custom `Innstilling`:** with `arbeidstimerAndelProsent: 20, kapitalAndelProsent: 5` persisted via `oppdaterInnstilling`, `likedelProsent` in the result is `75`, and the weighted components reflect the new percentages.
 
 - [ ] **Step 6: Run to verify failure, then implement `beregnFortjenestefordeling`**
@@ -209,7 +237,7 @@ Expected: FAIL. Implement:
 1. Fetch the Bolig (`select: { kjopesum: true, salgssum: true }`); if either is `null` or the Bolig doesn't exist, return `{ beregnet: false, grunn: "..." }` with a clear Norwegian message (distinguish "fant ikke eiendommen" from "kjøpesum/salgssum er ikke satt").
 2. Call `beregnTotalUtgifter`, `beregnEierandeler`, `beregnArbeidstimerAndeler`, `hentInnstilling` (all already built).
 3. Compute `fortjeneste = salgssum - kjopesum - totalUtgifter`, `likedelProsent = 100 - arbeidstimerAndelProsent - kapitalAndelProsent`.
-4. For each eier (the union driven by `beregnEierandeler`'s own eier list, which already enumerates every `rolle: "eier"` row): determine `kapitalandelProsent` and `arbeidsandelProsent`, substituting `100 / antallEiere` for either one when its underlying total is zero (detect this by checking whether every eier's raw `andelProsent`/`andelProsent` from the two aggregates is `0` **and** the total across all eiere of the underlying `belop`/`timer` is `0` — not just because one eier happens to have 0).
+4. Determine `kapitalFallbackBrukt`/`arbeidstimerFallbackBrukt` by checking whether the total across all eiere of the underlying `belop`/`timer` is `0` (not by checking any single eier's `andelProsent`, since one eier legitimately having `0` while others are nonzero is the normal case, not the fallback case). For each eier (the union driven by `beregnEierandeler`'s own eier list, which already enumerates every `rolle: "eier"` row): determine `kapitalandelProsent` and `arbeidsandelProsent`, substituting `100 / antallEiere` for either one when its fallback flag is `true`, otherwise using the aggregate's own `andelProsent` as-is.
 5. Compute `likedel = fortjeneste * (likedelProsent / 100) / antallEiere`, `arbeidsdel = fortjeneste * (arbeidstimerAndelProsent / 100) * (arbeidsandelProsent / 100)`, `kapitaldel = fortjeneste * (kapitalAndelProsent / 100) * (kapitalandelProsent / 100)`, `totalt = likedel + arbeidsdel + kapitaldel`.
 6. Return the full `FortjenesteResultat`.
 
@@ -245,14 +273,29 @@ git commit -m "feat: add fortjenestefordeling calculation"
 - Modify: `app/admin/(protected)/boliger/[id]/kapital/page.tsx` (add nav link)
 - Modify: `app/admin/(protected)/boliger/[id]/delprosjekter/page.tsx` (add nav link)
 - Modify: `app/admin/(protected)/AdminNavbar.tsx` (add top-level "Innstillinger" link)
+- Modify: `app/api/boliger/route.ts` (call `validerBoligPengefelt` in `POST`)
+- Modify: `app/api/boliger/route.test.ts` (test the new validation)
+- Modify: `app/api/boliger/[id]/route.ts` (call `validerBoligPengefelt` in `PUT`)
+- Modify: `app/api/boliger/[id]/route.test.ts` (test the new validation)
 
 **Interfaces:**
-- Consumes: `hentInnstilling`/`oppdaterInnstilling`/`INNSTILLING_FEIL` (Task 1), `beregnFortjenestefordeling`/`FortjenesteResultat` (Task 2).
+- Consumes: `hentInnstilling`/`oppdaterInnstilling`/`INNSTILLING_FEIL`/`validerBoligPengefelt` (Task 1), `beregnFortjenestefordeling`/`FortjenesteResultat` (Task 2).
 - Produces: nothing consumed by an earlier task (this is the last task).
+
+- [ ] **Step 0: Wire `validerBoligPengefelt` into both Bolig API routes**
+
+In `app/api/boliger/route.ts`'s `POST` and `app/api/boliger/[id]/route.ts`'s `PUT`, add `validerBoligPengefelt` to each file's existing `import { ... } from "@/lib/eiendom";` line, then immediately after the existing `const data = plukkSkrivbareBoligFelter(...)` line, add:
+
+```ts
+const pengefeil = validerBoligPengefelt(data);
+if (pengefeil) return NextResponse.json({ error: pengefeil }, { status: 400 });
+```
+
+Add a test to each route's existing `route.test.ts` asserting a `kjopesum`/`salgssum` value that is non-integer (e.g. `4.5`) or out of range (e.g. `-1`) gets rejected with `400` and the exact message, and that the write (`prisma.bolig.create`/`updateMany`) was never called — follow the existing test file's established mocking setup for that route (do not introduce a new one).
 
 - [ ] **Step 1: Write a failing test for `oppdaterInnstillingAction` in `app/admin/(protected)/innstillinger/actions.test.ts`**
 
-Follow the exact `vi.hoisted` prisma-mock pattern in `app/admin/(protected)/boliger/[id]/kapital/actions.test.ts` (mock `@/lib/prisma`'s default export, mock `next-auth`'s `getServerSession`). Cover:
+Follow the exact mocking pattern in `app/admin/(protected)/boliger/[id]/kapital/actions.test.ts`: `vi.mock("next-auth", () => ({ getServerSession: vi.fn().mockResolvedValue(null) }))` and `vi.mock("@/lib/prisma", () => ({ prisma: {} }))` — a named `prisma` export, not a default export. Cover:
 - No session → the action throws `"Ikke autorisert."`.
 - Valid input (`{ arbeidstimerAndelProsent: 15, kapitalAndelProsent: 5 }`) with a session → calls the lib's `oppdaterInnstilling` and returns `{ ok: true, data: null }`.
 - The lib throwing `INNSTILLING_FEIL` (sum over 100) → returns `{ ok: false, feilmelding: INNSTILLING_FEIL }`, not an uncaught throw.
@@ -282,7 +325,13 @@ Server component: fetch the Bolig (404 via `notFound()` if missing, matching `ka
 
 If `!resultat.beregnet`: render the `resultat.grunn` message in a plain info box (no table).
 
-If `resultat.beregnet`: render, in order: a summary block showing `kjopesum`, `salgssum`, `totalUtgifter`, and `fortjeneste` (each via `new Intl.NumberFormat("nb-NO").format(Math.round(verdi))` + " kr", fortjeneste visually emphasized, and a loss shown with a minus sign the formatter already produces — no special-casing needed); then a table with one row per `perEier` entry showing `brukerNavn`, `arbeidsandelProsent`/`kapitalandelProsent` (as `%` to one decimal, e.g. `rad.arbeidsandelProsent.toFixed(1)`), and `likedel`/`arbeidsdel`/`kapitaldel`/`totalt` each rounded the same way as the summary block; a one-line note below the table: "Avrundet til nærmeste kr." Add nav links matching the existing header pattern (back to the bolig, across to Delprosjekter and Kapital) plus a link to `/admin/innstillinger` labeled "Juster fordelingsnøkkel".
+If `resultat.beregnet`: render, in order:
+1. A summary block showing `kjopesum`, `salgssum`, `totalUtgifter`, and `fortjeneste` (each via `new Intl.NumberFormat("nb-NO").format(Math.round(verdi))` + " kr", fortjeneste visually emphasized, and a loss shown with a minus sign the formatter already produces — no special-casing needed).
+2. **The policy this result used, stated in words before the table** — e.g. "Fordeling: 80 % likt, 10 % etter arbeidstimer, 10 % etter kapital" built from `resultat.likedelProsent`/`resultat.arbeidstimerAndelProsent`/`resultat.kapitalAndelProsent` (never hardcode `80`/`10`/`10` — these three numbers are exactly what makes the breakdown checkable by hand when the settings have been changed from the default, which is the whole point of Review Focus item FORT-04/this plan's own §5 "svart boks" constraint). If `resultat.arbeidstimerFallbackBrukt` is `true`, add a note under the arbeidstimer column/heading: "Ingen timer registrert — fordelt likt." Same for `resultat.kapitalFallbackBrukt` under the kapital column, with "Ingen kapitalinnskudd registrert — fordelt likt."
+3. A table with one row per `perEier` entry showing `brukerNavn`, `arbeidsandelProsent`/`kapitalandelProsent` (as `%` to one decimal, e.g. `rad.arbeidsandelProsent.toFixed(1)`), and `likedel`/`arbeidsdel`/`kapitaldel`/`totalt` each rounded the same way as the summary block.
+4. A one-line note below the table: "Avrundet til nærmeste kr."
+
+Add nav links matching the existing header pattern (back to the bolig, across to Delprosjekter and Kapital) plus a link to `/admin/innstillinger` labeled "Juster fordelingsnøkkel".
 
 - [ ] **Step 7: Add `kjopesum`/`salgssum` inputs to `BoligSkjema.tsx`**
 
@@ -309,6 +358,6 @@ Expected: no errors
 - [ ] **Step 12: Commit**
 
 ```bash
-git add app/admin/\(protected\)/innstillinger app/admin/\(protected\)/boliger/\[id\]/fortjeneste components/admin/BoligSkjema.tsx app/admin/\(protected\)/boliger/\[id\]/page.tsx app/admin/\(protected\)/boliger/\[id\]/kapital/page.tsx app/admin/\(protected\)/boliger/\[id\]/delprosjekter/page.tsx app/admin/\(protected\)/AdminNavbar.tsx
+git add app/admin/\(protected\)/innstillinger app/admin/\(protected\)/boliger/\[id\]/fortjeneste components/admin/BoligSkjema.tsx app/admin/\(protected\)/boliger/\[id\]/page.tsx app/admin/\(protected\)/boliger/\[id\]/kapital/page.tsx app/admin/\(protected\)/boliger/\[id\]/delprosjekter/page.tsx app/admin/\(protected\)/AdminNavbar.tsx app/api/boliger/route.ts app/api/boliger/route.test.ts "app/api/boliger/[id]/route.ts" "app/api/boliger/[id]/route.test.ts"
 git commit -m "feat: add fortjeneste page, innstillinger settings, and kjopesum/salgssum inputs"
 ```
