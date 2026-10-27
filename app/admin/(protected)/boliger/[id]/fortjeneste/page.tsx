@@ -9,6 +9,10 @@ function formatKr(verdi: number): string {
   return `${new Intl.NumberFormat("nb-NO").format(Math.round(verdi))} kr`;
 }
 
+function formatProsent(verdi: number): string {
+  return new Intl.NumberFormat("nb-NO", { maximumFractionDigits: 2 }).format(verdi);
+}
+
 export default async function FortjenestePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const eiendomId = parseInt(id);
@@ -72,8 +76,8 @@ export default async function FortjenestePage({ params }: { params: Promise<{ id
           <div className="bg-white rounded-xl border border-[var(--border)] p-6 mb-8">
             <h2 className="font-semibold text-[var(--foreground)] mb-3">Fordelingsnøkkel</h2>
             <p className="text-sm text-[var(--foreground)]">
-              Fordeling: {resultat.likedelProsent} % likt, {resultat.arbeidstimerAndelProsent} % etter arbeidstimer,{" "}
-              {resultat.kapitalAndelProsent} % etter kapital
+              Fordeling: {formatProsent(resultat.likedelProsent)} % likt, {formatProsent(resultat.arbeidstimerAndelProsent)} % etter arbeidstimer,{" "}
+              {formatProsent(resultat.kapitalAndelProsent)} % etter kapital
             </p>
             {resultat.arbeidstimerFallbackBrukt && (
               <p className="text-xs text-[var(--muted)] mt-1">Ingen timer registrert — fordelt likt.</p>
