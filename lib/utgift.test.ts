@@ -7,6 +7,7 @@ import {
   detekterBildeformat,
   lagreKvittering,
   beregnFaktiskPerDelprosjekt,
+  beregnTotalUtgifter,
   slettUtgift,
   harUtgifter,
   UTGIFT_FEIL,
@@ -251,6 +252,28 @@ describe("beregnFaktiskPerDelprosjekt", () => {
     expect(sum.get(delprosjekt1.id)).toBe(1500);
     expect(sum.get(delprosjekt2.id)).toBe(300);
     expect(sum.size).toBe(2);
+  });
+});
+
+describe("beregnTotalUtgifter", () => {
+  it("summerer belop for alle utgifter, inkludert rader uten delprosjekt", async () => {
+    const prisma = await createTestDb();
+    const eiendom = await opprettEiendom(prisma);
+    const delprosjekt = await prisma.delprosjekt.create({ data: { eiendomId: eiendom.id, navn: "Kjøkken" } });
+
+    await opprettUtgift(prisma, { eiendomId: eiendom.id, delprosjektId: delprosjekt.id, dato: new Date(), kategori: "A", belop: 1000 });
+    await opprettUtgift(prisma, { eiendomId: eiendom.id, dato: new Date(), kategori: "A", belop: 500 });
+
+    const total = await beregnTotalUtgifter(prisma, eiendom.id);
+
+    expect(total).toBe(1500);
+  });
+
+  it("returnerer 0 for en eiendom uten noen utgifter", async () => {
+    const prisma = await createTestDb();
+    const eiendom = await opprettEiendom(prisma);
+
+    expect(await beregnTotalUtgifter(prisma, eiendom.id)).toBe(0);
   });
 });
 
