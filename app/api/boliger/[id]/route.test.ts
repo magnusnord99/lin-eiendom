@@ -21,6 +21,9 @@ const { prismaMock } = vi.hoisted(() => ({
     dokument: {
       count: vi.fn(),
     },
+    arbeidshendelse: {
+      count: vi.fn(),
+    },
   },
 }));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
@@ -37,6 +40,7 @@ beforeEach(() => {
   prismaMock.kapitalinnskudd.count.mockReset();
   prismaMock.utgift.count.mockReset();
   prismaMock.dokument.count.mockReset();
+  prismaMock.arbeidshendelse.count.mockReset();
 });
 
 describe("PUT /api/boliger/[id]", () => {
@@ -214,6 +218,7 @@ describe("DELETE /api/boliger/[id]", () => {
     prismaMock.kapitalinnskudd.count.mockResolvedValue(0);
     prismaMock.utgift.count.mockResolvedValue(0);
     prismaMock.dokument.count.mockResolvedValue(0);
+    prismaMock.arbeidshendelse.count.mockResolvedValue(0);
     prismaMock.bolig.delete.mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError("Foreign key constraint failed", {
         code: "P2003",
@@ -271,5 +276,38 @@ describe("DELETE /api/boliger/[id]", () => {
     expect(res.status).toBe(409);
     expect(body.error).toBe("Kan ikke slette en eiendom med registrerte dokumenter.");
     expect(prismaMock.bolig.delete).not.toHaveBeenCalled();
+  });
+
+  it("gir 409 (rask vei) hvis eiendommen har registrerte arbeidshendelser, og sletter aldri", async () => {
+    prismaMock.delprosjekt.count.mockResolvedValue(0);
+    prismaMock.kapitalinnskudd.count.mockResolvedValue(0);
+    prismaMock.utgift.count.mockResolvedValue(0);
+    prismaMock.dokument.count.mockResolvedValue(0);
+    prismaMock.arbeidshendelse.count.mockResolvedValue(1);
+
+    const req = new Request("http://localhost/api/boliger/1", { method: "DELETE" });
+    const res = await DELETE(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(body.error).toBe("Kan ikke slette en eiendom med registrerte arbeidshendelser.");
+    expect(prismaMock.bolig.delete).not.toHaveBeenCalled();
+  });
+
+  it("sletter eiendommen når ingen av de fem avhengighetene finnes", async () => {
+    prismaMock.delprosjekt.count.mockResolvedValue(0);
+    prismaMock.kapitalinnskudd.count.mockResolvedValue(0);
+    prismaMock.utgift.count.mockResolvedValue(0);
+    prismaMock.dokument.count.mockResolvedValue(0);
+    prismaMock.arbeidshendelse.count.mockResolvedValue(0);
+    prismaMock.bolig.delete.mockResolvedValue({ id: 1 });
+
+    const req = new Request("http://localhost/api/boliger/1", { method: "DELETE" });
+    const res = await DELETE(req as any, { params: Promise.resolve({ id: "1" }) } as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(prismaMock.bolig.delete).toHaveBeenCalledWith({ where: { id: 1 } });
   });
 });

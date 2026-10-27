@@ -8,6 +8,7 @@ import { harDelprosjekter } from "@/lib/delprosjekt";
 import { harKapitalinnskudd } from "@/lib/kapitalinnskudd";
 import { harUtgifter } from "@/lib/utgift";
 import { harDokumenter } from "@/lib/dokument";
+import { harArbeidshendelser } from "@/lib/arbeidshendelse";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -105,6 +106,13 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (await harDokumenter(prisma, eiendomId)) {
     return NextResponse.json(
       { error: "Kan ikke slette en eiendom med registrerte dokumenter." },
+      { status: 409 }
+    );
+  }
+
+  if (await harArbeidshendelser(prisma, eiendomId)) {
+    return NextResponse.json(
+      { error: "Kan ikke slette en eiendom med registrerte arbeidshendelser." },
       { status: 409 }
     );
   }
