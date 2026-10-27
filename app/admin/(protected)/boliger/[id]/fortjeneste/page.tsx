@@ -43,6 +43,10 @@ export default async function FortjenestePage({ params }: { params: Promise<{ id
         <Link href="/admin/innstillinger" className="text-sm text-[var(--primary)] hover:underline">
           Juster fordelingsnøkkel
         </Link>
+        <span className="text-[var(--muted)]">/</span>
+        <Link href={`/admin/boliger/${eiendomId}/dokumenter`} className="text-sm text-[var(--primary)] hover:underline">
+          Dokumenter
+        </Link>
       </div>
 
       {!resultat.beregnet ? (
