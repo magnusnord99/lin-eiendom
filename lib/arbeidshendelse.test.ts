@@ -3,6 +3,7 @@ import { createTestDb } from "../tests/helpers/testDb";
 import {
   opprettArbeidshendelse,
   hentArbeidshendelserForPeriode,
+  hentKommendeArbeidshendelser,
   slettArbeidshendelse,
   harArbeidshendelser,
   ARBEIDSHENDELSE_FEIL,
@@ -79,6 +80,62 @@ describe("hentArbeidshendelserForPeriode", () => {
     expect(hendelser).toHaveLength(1);
     expect(hendelser[0].tittel).toBe("Innenfor");
     expect(hendelser[0].eiendomTittel).toBe("Storgata 1");
+  });
+});
+
+describe("hentKommendeArbeidshendelser", () => {
+  it("returnerer kun hendelser på eller etter fraDato, stigende på dato, med eiendomstittel", async () => {
+    const prisma = await createTestDb();
+    const eiendom1 = await prisma.bolig.create({ data: { tittel: "Storgata 1", adresse: "A", by: "Ålesund", type: "salg", beskrivelse: "" } });
+    const eiendom2 = await prisma.bolig.create({ data: { tittel: "Lillegata 2", adresse: "B", by: "Ålesund", type: "salg", beskrivelse: "" } });
+    const bruker = await prisma.adminUser.create({ data: { brukernavn: "magnus", passord: "x", navn: "Magnus", rolle: "eier" } });
+
+    await opprettArbeidshendelse(prisma, {
+      eiendomId: eiendom1.id,
+      tittel: "Før",
+      dato: new Date("2026-11-01T00:00:00.000Z"),
+      opprettetAvBrukerId: bruker.id,
+    });
+    await opprettArbeidshendelse(prisma, {
+      eiendomId: eiendom2.id,
+      tittel: "På dagen",
+      dato: new Date("2026-11-10T00:00:00.000Z"),
+      opprettetAvBrukerId: bruker.id,
+    });
+    await opprettArbeidshendelse(prisma, {
+      eiendomId: eiendom1.id,
+      tittel: "Etter",
+      dato: new Date("2026-11-15T00:00:00.000Z"),
+      opprettetAvBrukerId: bruker.id,
+    });
+
+    const hendelser = await hentKommendeArbeidshendelser(prisma, new Date("2026-11-10T00:00:00.000Z"), 10);
+
+    expect(hendelser).toHaveLength(2);
+    expect(hendelser.map((h) => h.tittel)).toEqual(["På dagen", "Etter"]);
+    expect(hendelser[0].eiendomTittel).toBe("Lillegata 2");
+    expect(hendelser[0].eiendomId).toBe(eiendom2.id);
+    expect(hendelser[1].eiendomTittel).toBe("Storgata 1");
+  });
+
+  it("begrenser resultatet til antall, og holder de tidligste", async () => {
+    const prisma = await createTestDb();
+    const eiendom = await prisma.bolig.create({ data: { tittel: "A", adresse: "A", by: "Ålesund", type: "salg", beskrivelse: "" } });
+    const bruker = await prisma.adminUser.create({ data: { brukernavn: "magnus", passord: "x", navn: "Magnus", rolle: "eier" } });
+
+    for (let dag = 1; dag <= 5; dag++) {
+      await opprettArbeidshendelse(prisma, {
+        eiendomId: eiendom.id,
+        tittel: `Dag ${dag}`,
+        dato: new Date(`2026-11-${String(dag).padStart(2, "0")}T00:00:00.000Z`),
+        opprettetAvBrukerId: bruker.id,
+      });
+    }
+
+    const hendelser = await hentKommendeArbeidshendelser(prisma, new Date("2026-11-01T00:00:00.000Z"), 3);
+
+    expect(hendelser).toHaveLength(3);
+    expect(hendelser.map((h) => h.tittel)).toEqual(["Dag 1", "Dag 2", "Dag 3"]);
   });
 });
 
