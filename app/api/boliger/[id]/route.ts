@@ -8,6 +8,7 @@ import { harDelprosjekter } from "@/lib/delprosjekt";
 import { harKapitalinnskudd } from "@/lib/kapitalinnskudd";
 import { harUtgifter } from "@/lib/utgift";
 import { harDokumenter } from "@/lib/dokument";
+import { harArbeidshendelser } from "@/lib/arbeidshendelse";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -109,18 +110,25 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     );
   }
 
+  if (await harArbeidshendelser(prisma, eiendomId)) {
+    return NextResponse.json(
+      { error: "Kan ikke slette en eiendom med registrerte arbeidshendelser." },
+      { status: 409 }
+    );
+  }
+
   try {
     await prisma.bolig.delete({ where: { id: eiendomId } });
   } catch (error) {
-    // Kappløp: et delprosjekt, kapitalinnskudd, utgift eller dokument kan ha blitt
-    // opprettet mellom sjekkene over og selve slettingen. Fang fremmednøkkel-feilen og
-    // svar med en generisk 409, i stedet for en ukontrollert 500. Vi vet her ikke hvilken
-    // av de fire fremmednøklene som faktisk slo til.
+    // Kappløp: et delprosjekt, kapitalinnskudd, utgift, dokument eller arbeidshendelse
+    // kan ha blitt opprettet mellom sjekkene over og selve slettingen. Fang
+    // fremmednøkkel-feilen og svar med en generisk 409, i stedet for en ukontrollert 500.
+    // Vi vet her ikke hvilken av de fem fremmednøklene som faktisk slo til.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
       return NextResponse.json(
         {
           error:
-            "Kan ikke slette en eiendom med registrerte delprosjekter, kapitalinnskudd, utgifter eller dokumenter.",
+            "Kan ikke slette en eiendom med registrerte delprosjekter, kapitalinnskudd, utgifter, dokumenter eller arbeidshendelser.",
         },
         { status: 409 }
       );

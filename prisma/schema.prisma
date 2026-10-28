@@ -35,6 +35,7 @@ model Bolig {
   kapitalinnskudd Kapitalinnskudd[]
   utgifter Utgift[]
   dokumenter Dokument[]
+  arbeidshendelser Arbeidshendelse[]
 }
 
 model Innstilling {
@@ -54,6 +55,8 @@ model AdminUser {
   kapitalinnskudd Kapitalinnskudd[]
   utgifterBetalt Utgift[] @relation("UtgiftBetaltAv")
   dokumenter Dokument[]
+  tilgjengelighet Tilgjengelighet[]
+  arbeidshendelser Arbeidshendelse[]
 }
 
 model Delprosjekt {
@@ -128,6 +131,34 @@ model Dokument {
   opplastetAvBrukerId Int
   opplastetAvBruker   AdminUser    @relation(fields: [opplastetAvBrukerId], references: [id])
   opprettet           DateTime     @default(now())
+}
+
+model Tilgjengelighet {
+  id             Int       @id @default(autoincrement())
+  brukerId       Int
+  bruker         AdminUser @relation(fields: [brukerId], references: [id])
+  dato           DateTime
+  status         String
+  fraKl          String?
+  tilKl          String?
+  gjentakelseId  String?
+  opprettet      DateTime  @default(now())
+
+  @@unique([brukerId, dato])
+}
+
+model Arbeidshendelse {
+  id                  Int       @id @default(autoincrement())
+  eiendomId           Int
+  eiendom             Bolig     @relation(fields: [eiendomId], references: [id])
+  tittel              String
+  beskrivelse         String?
+  dato                DateTime
+  fraKl               String?
+  tilKl               String?
+  opprettetAvBrukerId Int
+  opprettetAvBruker   AdminUser @relation(fields: [opprettetAvBrukerId], references: [id])
+  opprettet           DateTime  @default(now())
 }
 
 model Henvendelse {

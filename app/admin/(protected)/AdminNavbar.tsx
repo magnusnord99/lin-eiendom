@@ -33,6 +33,14 @@ export default function AdminNavbar({ brukerNavn }: { brukerNavn: string }) {
                 Boliger
               </Link>
               <Link
+                href="/admin/kalender"
+                className={`px-3 py-1.5 rounded text-sm transition-colors ${
+                  pathname.startsWith("/admin/kalender") ? "bg-white/20" : "hover:bg-white/10"
+                }`}
+              >
+                Kalender
+              </Link>
+              <Link
                 href="/admin/henvendelser"
                 className={`px-3 py-1.5 rounded text-sm transition-colors ${
                   pathname.startsWith("/admin/henvendelser") ? "bg-white/20" : "hover:bg-white/10"
