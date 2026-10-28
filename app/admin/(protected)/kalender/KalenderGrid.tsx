@@ -322,6 +322,7 @@ export default function KalenderGrid({
 
       {valgtDato && (
         <DagDetaljer
+          key={valgtDato}
           dato={valgtDato}
           onLukk={() => setValgtDato(null)}
           boliger={boliger}
