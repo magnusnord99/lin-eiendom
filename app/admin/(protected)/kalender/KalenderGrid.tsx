@@ -35,6 +35,7 @@ interface ArbeidshendelseRad {
 
 interface KalenderGridProps {
   anker: string;
+  initialVisning: "maned" | "uke";
   gridDatoer: string[];
   eiere: { id: number; navn: string }[];
   boliger: { id: number; tittel: string }[];
@@ -86,6 +87,7 @@ function erSammeManed(iso: string, anker: string): boolean {
 
 export default function KalenderGrid({
   anker,
+  initialVisning,
   gridDatoer,
   eiere,
   boliger,
@@ -95,7 +97,11 @@ export default function KalenderGrid({
   naavaerendeBrukerId,
 }: KalenderGridProps) {
   const router = useRouter();
-  const [visning, setVisning] = useState<"maned" | "uke">("maned");
+  // Seeded from the `?visning=` search param (via page.tsx), not hardcoded to "maned" —
+  // otherwise navigating with a `?dato=...` link (which Next.js 16 treats as a distinct
+  // page-segment cache key) would remount this component and always reset to month view,
+  // even when the link was a week-view "Neste uke"/"Forrige uke" navigation.
+  const [visning, setVisning] = useState<"maned" | "uke">(initialVisning);
   const [valgtDato, setValgtDato] = useState<string | null>(null);
 
   const tilgjengelighetPerDag = useMemo(() => {
@@ -160,19 +166,19 @@ export default function KalenderGrid({
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <Link
-            href={`/admin/kalender?dato=${forsteIManed(anker, -1)}`}
+            href={`/admin/kalender?dato=${forsteIManed(anker, -1)}&visning=maned`}
             className="px-3 py-1.5 rounded border border-[var(--border)] text-sm hover:bg-gray-50"
           >
             ‹ Forrige måned
           </Link>
           <Link
-            href="/admin/kalender"
+            href="/admin/kalender?visning=maned"
             className="px-3 py-1.5 rounded border border-[var(--border)] text-sm hover:bg-gray-50"
           >
             I dag
           </Link>
           <Link
-            href={`/admin/kalender?dato=${forsteIManed(anker, 1)}`}
+            href={`/admin/kalender?dato=${forsteIManed(anker, 1)}&visning=maned`}
             className="px-3 py-1.5 rounded border border-[var(--border)] text-sm hover:bg-gray-50"
           >
             Neste måned ›
@@ -184,13 +190,13 @@ export default function KalenderGrid({
           {visning === "uke" && (
             <>
               <Link
-                href={`/admin/kalender?dato=${leggTilDager(anker, -7)}`}
+                href={`/admin/kalender?dato=${leggTilDager(anker, -7)}&visning=uke`}
                 className="px-3 py-1.5 rounded border border-[var(--border)] text-sm hover:bg-gray-50"
               >
                 ‹ Forrige uke
               </Link>
               <Link
-                href={`/admin/kalender?dato=${leggTilDager(anker, 7)}`}
+                href={`/admin/kalender?dato=${leggTilDager(anker, 7)}&visning=uke`}
                 className="px-3 py-1.5 rounded border border-[var(--border)] text-sm hover:bg-gray-50"
               >
                 Neste uke ›
@@ -407,6 +413,10 @@ function DagDetaljer({
   }
 
   async function handleSlettTilgjengelighet(id: number) {
+    if (!window.confirm("Er du sikker på at du vil slette denne registreringen?")) {
+      return;
+    }
+
     setSlettendeTilgId(id);
     setTilgFeil("");
 
@@ -457,6 +467,10 @@ function DagDetaljer({
   }
 
   async function handleSlettHendelse(id: number) {
+    if (!window.confirm("Er du sikker på at du vil slette denne arbeidshendelsen?")) {
+      return;
+    }
+
     setSlettendeHendelseId(id);
     setHendelseFeil("");
 

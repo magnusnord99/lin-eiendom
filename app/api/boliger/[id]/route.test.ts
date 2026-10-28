@@ -232,7 +232,7 @@ describe("DELETE /api/boliger/[id]", () => {
 
     expect(res.status).toBe(409);
     expect(body.error).toBe(
-      "Kan ikke slette en eiendom med registrerte delprosjekter, kapitalinnskudd, utgifter eller dokumenter."
+      "Kan ikke slette en eiendom med registrerte delprosjekter, kapitalinnskudd, utgifter, dokumenter eller arbeidshendelser."
     );
   });
 

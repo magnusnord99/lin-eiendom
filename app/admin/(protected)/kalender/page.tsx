@@ -42,11 +42,17 @@ export default async function KalenderPage({
 }) {
   const params = await searchParams;
   const datoParam = params.dato;
+  const visningParam = params.visning;
 
   // A repeated `?dato=` query param arrives as an array — treat that as invalid,
   // same as any other validation failure, and fall back to today.
   const anker =
     typeof datoParam === "string" && erGyldigDatoStreng(datoParam) ? datoParam : dagensDatoOslo();
+
+  // Whitelist exactly "maned"/"uke" — anything else (missing, repeated-array, typo)
+  // defaults to "maned". This only decides which of the already-fetched date-keys
+  // KalenderGrid renders on first paint; it never changes what gets fetched above.
+  const initialVisning: "maned" | "uke" = visningParam === "uke" ? "uke" : "maned";
 
   const [aar, maaned] = anker.split("-").map(Number);
 
@@ -120,6 +126,7 @@ export default async function KalenderPage({
       <h1 className="text-2xl font-bold text-[var(--foreground)] mb-6">Kalender</h1>
       <KalenderGrid
         anker={anker}
+        initialVisning={initialVisning}
         gridDatoer={gridDatoer}
         eiere={eiere}
         boliger={boliger}

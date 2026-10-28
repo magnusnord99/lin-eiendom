@@ -97,6 +97,21 @@ describe("settTilgjengelighet", () => {
     expect(rader[0].status).toBe("ikke_ledig");
   });
 
+  it("fjerner tidsrom fra forrige registrering når ny registrering ikke har fraKl/tilKl", async () => {
+    const prisma = await createTestDb();
+    const bruker = await prisma.adminUser.create({ data: { brukernavn: "magnus", passord: "x", navn: "Magnus", rolle: "eier" } });
+    const dato = new Date("2026-11-02T00:00:00.000Z");
+
+    await settTilgjengelighet(prisma, { brukerId: bruker.id, dato, status: "ledig", fraKl: "09:00", tilKl: "15:00" });
+    await settTilgjengelighet(prisma, { brukerId: bruker.id, dato, status: "ikke_ledig" });
+
+    const rader = await prisma.tilgjengelighet.findMany({ where: { brukerId: bruker.id } });
+    expect(rader).toHaveLength(1);
+    expect(rader[0].status).toBe("ikke_ledig");
+    expect(rader[0].fraKl).toBeNull();
+    expect(rader[0].tilKl).toBeNull();
+  });
+
   it("oppretter 4 rader, én per uke, med samme gjentakelseId", async () => {
     const prisma = await createTestDb();
     const bruker = await prisma.adminUser.create({ data: { brukernavn: "magnus", passord: "x", navn: "Magnus", rolle: "eier" } });

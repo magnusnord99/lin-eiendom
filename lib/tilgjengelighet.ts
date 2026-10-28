@@ -56,13 +56,16 @@ export async function settTilgjengelighet(
         brukerId: input.brukerId,
         dato: input.dato,
         status: input.status,
-        fraKl: input.fraKl,
-        tilKl: input.tilKl,
+        fraKl: input.fraKl ?? null,
+        tilKl: input.tilKl ?? null,
       },
       update: {
         status: input.status,
-        fraKl: input.fraKl,
-        tilKl: input.tilKl,
+        // Explicit `?? null` (not just `input.fraKl`): Prisma treats `undefined` in an
+        // `update` block as "leave unchanged", so omitting fraKl/tilKl here would let a
+        // stale time interval from a previous registration survive under the new status.
+        fraKl: input.fraKl ?? null,
+        tilKl: input.tilKl ?? null,
       },
     });
 
@@ -80,14 +83,17 @@ export async function settTilgjengelighet(
         brukerId: input.brukerId,
         dato,
         status: input.status,
-        fraKl: input.fraKl,
-        tilKl: input.tilKl,
+        fraKl: input.fraKl ?? null,
+        tilKl: input.tilKl ?? null,
         gjentakelseId,
       },
       update: {
         status: input.status,
-        fraKl: input.fraKl,
-        tilKl: input.tilKl,
+        // See the single-row upsert above: `?? null` is required so that leaving the
+        // time fields out always clears a previous interval, instead of Prisma's
+        // update-ignores-undefined behavior letting the old fraKl/tilKl survive.
+        fraKl: input.fraKl ?? null,
+        tilKl: input.tilKl ?? null,
         gjentakelseId,
       },
     });
