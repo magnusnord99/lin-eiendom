@@ -34,6 +34,10 @@ export default async function RedigerBoligPage({ params }: { params: Promise<{ i
         <Link href={`/admin/boliger/${bolig.id}/fortjeneste`} className="text-sm text-[var(--primary)] hover:underline">
           Fortjeneste
         </Link>
+        <span className="text-[var(--muted)]">/</span>
+        <Link href={`/admin/boliger/${bolig.id}/dokumenter`} className="text-sm text-[var(--primary)] hover:underline">
+          Dokumenter
+        </Link>
       </div>
       <BoligSkjema
         initial={{

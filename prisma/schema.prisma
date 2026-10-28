@@ -34,6 +34,7 @@ model Bolig {
   delprosjekter Delprosjekt[]
   kapitalinnskudd Kapitalinnskudd[]
   utgifter Utgift[]
+  dokumenter Dokument[]
 }
 
 model Innstilling {
@@ -52,6 +53,7 @@ model AdminUser {
   timeregistreringer Timeregistrering[]
   kapitalinnskudd Kapitalinnskudd[]
   utgifterBetalt Utgift[] @relation("UtgiftBetaltAv")
+  dokumenter Dokument[]
 }
 
 model Delprosjekt {
@@ -66,6 +68,7 @@ model Delprosjekt {
   oppdatert   DateTime @updatedAt
   timeregistreringer Timeregistrering[]
   utgifter Utgift[]
+  dokumenter Dokument[]
 }
 
 model Timeregistrering {
@@ -108,6 +111,22 @@ model Utgift {
   betaltAvBruker      AdminUser?   @relation("UtgiftBetaltAv", fields: [betaltAvBrukerId], references: [id])
   kvitteringBilde     Bytes?
   kvitteringMimeType  String?
+  opprettet           DateTime     @default(now())
+}
+
+model Dokument {
+  id                  Int          @id @default(autoincrement())
+  eiendomId           Int
+  eiendom             Bolig        @relation(fields: [eiendomId], references: [id])
+  delprosjektId       Int?
+  delprosjekt         Delprosjekt? @relation(fields: [delprosjektId], references: [id])
+  kategori            String
+  navn                String
+  blobPathname        String
+  mimeType            String
+  storrelse           Int
+  opplastetAvBrukerId Int
+  opplastetAvBruker   AdminUser    @relation(fields: [opplastetAvBrukerId], references: [id])
   opprettet           DateTime     @default(now())
 }
 

@@ -72,6 +72,10 @@ export default async function DelprosjekterPage({ params }: { params: Promise<{ 
         <Link href={`/admin/boliger/${eiendomId}/fortjeneste`} className="text-sm text-[var(--primary)] hover:underline">
           Fortjeneste
         </Link>
+        <span className="text-[var(--muted)]">/</span>
+        <Link href={`/admin/boliger/${eiendomId}/dokumenter`} className="text-sm text-[var(--primary)] hover:underline">
+          Dokumenter
+        </Link>
       </div>
 
       <div className="bg-white rounded-xl border border-[var(--border)] p-6 mb-8">
