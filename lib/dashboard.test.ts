@@ -60,6 +60,22 @@ describe("hentTotalInvestert", () => {
 
     expect(await hentTotalInvestert(prisma)).toBe(0);
   });
+
+  it("summerer kun kapitalinnskudd fra brukere med rolle 'eier', slik som beregnEierandeler", async () => {
+    const prisma = await createTestDb();
+    const eiendom = await prisma.bolig.create({ data: { tittel: "A", adresse: "A", by: "Ålesund", type: "salg", beskrivelse: "" } });
+    const eier = await prisma.adminUser.create({ data: { brukernavn: "eier1", passord: "x", navn: "Eier", rolle: "eier" } });
+    const ikkeEier = await prisma.adminUser.create({ data: { brukernavn: "annen1", passord: "x", navn: "Annen", rolle: "ansatt" } });
+
+    await prisma.kapitalinnskudd.create({
+      data: { eiendomId: eiendom.id, brukerId: eier.id, dato: new Date("2026-01-01T00:00:00.000Z"), belop: 100_000 },
+    });
+    await prisma.kapitalinnskudd.create({
+      data: { eiendomId: eiendom.id, brukerId: ikkeEier.id, dato: new Date("2026-01-02T00:00:00.000Z"), belop: 75_000 },
+    });
+
+    expect(await hentTotalInvestert(prisma)).toBe(100_000);
+  });
 });
 
 describe("hentTotalUtgifterDenneManeden", () => {
@@ -159,5 +175,20 @@ describe("hentEiendomOversikt", () => {
       "D - null kroner budsjett",
       "E - delvis budsjettert",
     ]);
+  });
+
+  it("markerer ikke '(delvis)' når flere delprosjekter alle har budsjett: 0", async () => {
+    const prisma = await createTestDb();
+
+    const eiendomF = await prisma.bolig.create({ data: { tittel: "F - alle null kroner", adresse: "F", by: "Ålesund", type: "salg", beskrivelse: "" } });
+    await prisma.delprosjekt.create({ data: { eiendomId: eiendomF.id, navn: "Fasade", budsjett: 0 } });
+    await prisma.delprosjekt.create({ data: { eiendomId: eiendomF.id, navn: "Tak", budsjett: 0 } });
+
+    const oversikt = await hentEiendomOversikt(prisma);
+    const radF = oversikt.find((r) => r.id === eiendomF.id)!;
+
+    expect(radF.antallDelprosjekter).toBe(2);
+    expect(radF.antallMedBudsjett).toBe(2);
+    expect(radF.totalBudsjett).toBe(0);
   });
 });

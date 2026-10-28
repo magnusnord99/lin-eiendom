@@ -25,7 +25,12 @@ export function manedsgrenserOslo(naa: Date = new Date()): { start: Date; sluttE
 }
 
 export async function hentTotalInvestert(prisma: PrismaClient): Promise<number> {
-  const resultat = await prisma.kapitalinnskudd.aggregate({ _sum: { belop: true } });
+  // Samme definisjon av "investert" som `beregnEierandeler` i lib/kapitalinnskudd.ts:
+  // kun kapitalinnskudd fra brukere med rolle "eier" teller.
+  const resultat = await prisma.kapitalinnskudd.aggregate({
+    where: { bruker: { rolle: "eier" } },
+    _sum: { belop: true },
+  });
   return resultat._sum.belop ?? 0;
 }
 
