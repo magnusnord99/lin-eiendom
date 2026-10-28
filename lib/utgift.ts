@@ -172,6 +172,15 @@ export async function beregnFaktiskPerDelprosjekt(
   return sumPerDelprosjekt;
 }
 
+export async function beregnTotalUtgifter(prisma: PrismaClient, eiendomId: number): Promise<number> {
+  const resultat = await prisma.utgift.aggregate({
+    where: { eiendomId },
+    _sum: { belop: true },
+  });
+
+  return resultat._sum.belop ?? 0;
+}
+
 export async function slettUtgift(prisma: PrismaClient, id: number): Promise<void> {
   if (!Number.isInteger(id) || id <= 0) {
     throw new Error(UTGIFT_FEIL);

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { krevInnloggetSesjon } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma/client";
-import { hentOffentligSynligBolig, plukkSkrivbareBoligFelter } from "@/lib/eiendom";
+import { hentOffentligSynligBolig, plukkSkrivbareBoligFelter, validerBoligPengefelt } from "@/lib/eiendom";
 import { resolverEffektivStatus, validerStatusForSkriving } from "@/lib/eiendom-status";
 import { harDelprosjekter } from "@/lib/delprosjekt";
 import { harKapitalinnskudd } from "@/lib/kapitalinnskudd";
@@ -24,6 +24,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   // forventetStatus/forventetType er det klienten opprinnelig lastet (ikke Bolig-kolonner).
   const { forventetStatus, forventetType, ...raw } = await req.json();
   const data = plukkSkrivbareBoligFelter(raw);
+
+  const pengefeil = validerBoligPengefelt(data);
+  if (pengefeil) return NextResponse.json({ error: pengefeil }, { status: 400 });
 
   const eksisterende = await prisma.bolig.findUnique({ where: { id } });
   if (!eksisterende) return NextResponse.json({ error: "Ikke funnet" }, { status: 404 });

@@ -30,6 +30,10 @@ export default async function RedigerBoligPage({ params }: { params: Promise<{ i
         <Link href={`/admin/boliger/${bolig.id}/kapital`} className="text-sm text-[var(--primary)] hover:underline">
           Kapital
         </Link>
+        <span className="text-[var(--muted)]">/</span>
+        <Link href={`/admin/boliger/${bolig.id}/fortjeneste`} className="text-sm text-[var(--primary)] hover:underline">
+          Fortjeneste
+        </Link>
       </div>
       <BoligSkjema
         initial={{
@@ -47,6 +51,8 @@ export default async function RedigerBoligPage({ params }: { params: Promise<{ i
           lat: bolig.lat?.toString() ?? "",
           lng: bolig.lng?.toString() ?? "",
           status: bolig.status,
+          kjopesum: bolig.kjopesum?.toString() ?? "",
+          salgssum: bolig.salgssum?.toString() ?? "",
         }}
       />
     </div>

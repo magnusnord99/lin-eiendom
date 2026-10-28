@@ -33,6 +33,7 @@ export const SKRIVBARE_BOLIG_SKALARFELTER = [
   "tittel", "adresse", "by", "pris", "type", "storrelse", "rom", "bad",
   "beskrivelse", "bilder", "lat", "lng", "aktiv", "status",
   "kjopesum", "kjopsdato", "finansiering", "estimertVerdiNa", "estimertVerdiEtterOppussing",
+  "salgssum",
 ] as const;
 
 export function plukkSkrivbareBoligFelter(input: Record<string, unknown>): Record<string, unknown> {
@@ -41,6 +42,35 @@ export function plukkSkrivbareBoligFelter(input: Record<string, unknown>): Recor
     if (felt in input) resultat[felt] = input[felt];
   }
   return resultat;
+}
+
+const PENGEFELT_FEILMELDINGER: Record<string, string> = {
+  kjopesum: "Ugyldig kjøpesum.",
+  salgssum: "Ugyldig salgssum.",
+};
+
+// Validerer de pengefeltene på Bolig som ikke kan tillate korrupte verdier
+// (f.eks. flyttall eller overløp) å nå databasen. Et syntaktisk gyldig
+// heltall innenfor grensene godtas uansett hvordan verdien ble produsert —
+// denne funksjonen kan ikke oppdage *hvordan* et tall ble regnet ut, bare om
+// det endelige resultatet er et gyldig heltall i riktig område.
+export function validerBoligPengefelt(data: Record<string, unknown>): string | null {
+  for (const felt of ["kjopesum", "salgssum"] as const) {
+    if (!(felt in data)) continue;
+    const verdi = data[felt];
+    if (verdi === null) continue;
+
+    if (
+      typeof verdi !== "number" ||
+      !Number.isInteger(verdi) ||
+      verdi < 0 ||
+      verdi > 2_147_483_647
+    ) {
+      return PENGEFELT_FEILMELDINGER[felt];
+    }
+  }
+
+  return null;
 }
 
 export async function hentOffentligSynligeBoliger(

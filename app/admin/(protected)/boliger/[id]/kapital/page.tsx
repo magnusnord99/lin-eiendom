@@ -38,6 +38,10 @@ export default async function KapitalPage({ params }: { params: Promise<{ id: st
         <Link href={`/admin/boliger/${eiendomId}/delprosjekter`} className="text-sm text-[var(--primary)] hover:underline">
           Delprosjekter
         </Link>
+        <span className="text-[var(--muted)]">/</span>
+        <Link href={`/admin/boliger/${eiendomId}/fortjeneste`} className="text-sm text-[var(--primary)] hover:underline">
+          Fortjeneste
+        </Link>
       </div>
 
       <div className="bg-white rounded-xl border border-[var(--border)] p-6 mb-8">
