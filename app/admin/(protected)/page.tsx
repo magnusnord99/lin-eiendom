@@ -130,6 +130,10 @@ export default async function AdminDashboard() {
       <div className="bg-white rounded-xl border border-[var(--border)] mt-8">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
           <h2 className="font-semibold text-[var(--foreground)]">Budsjett og utgifter per eiendom</h2>
+          <div className="flex gap-6 text-xs text-[var(--muted)]">
+            <span className="w-28 text-right">Utgift</span>
+            <span className="w-28 text-right">Budsjett</span>
+          </div>
         </div>
         <div className="divide-y divide-[var(--border)]">
           {eiendomOversikt.map((eiendom) => (
@@ -140,14 +144,14 @@ export default async function AdminDashboard() {
               >
                 {eiendom.tittel}
               </Link>
-              <div className="text-sm text-[var(--foreground)] text-right">
-                <p>{nok.format(eiendom.totalUtgift)} kr</p>
-                <p className="text-xs text-[var(--muted)]">
+              <div className="flex gap-6 text-sm text-[var(--foreground)]">
+                <p className="w-28 text-right">{nok.format(eiendom.totalUtgift)} kr</p>
+                <p className="w-28 text-right text-xs text-[var(--muted)]">
                   {eiendom.antallMedBudsjett === 0 ? (
                     "Ikke budsjettert"
                   ) : (
                     <>
-                      {nok.format(eiendom.totalBudsjett)} kr budsjettert
+                      {nok.format(eiendom.totalBudsjett)} kr
                       {eiendom.antallMedBudsjett < eiendom.antallDelprosjekter && (
                         <span className="text-[var(--muted)]"> (delvis)</span>
                       )}
