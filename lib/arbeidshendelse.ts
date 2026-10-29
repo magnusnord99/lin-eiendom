@@ -61,6 +61,35 @@ export async function hentArbeidshendelserForPeriode(
   }));
 }
 
+export async function hentKommendeArbeidshendelser(
+  prisma: PrismaClient,
+  fraDato: Date,
+  antall: number
+): Promise<
+  Array<{
+    id: number;
+    eiendomId: number;
+    eiendomTittel: string;
+    tittel: string;
+    dato: Date;
+  }>
+> {
+  const rader = await prisma.arbeidshendelse.findMany({
+    where: { dato: { gte: fraDato } },
+    orderBy: { dato: "asc" },
+    take: antall,
+    include: { eiendom: { select: { tittel: true } } },
+  });
+
+  return rader.map((rad) => ({
+    id: rad.id,
+    eiendomId: rad.eiendomId,
+    eiendomTittel: rad.eiendom.tittel,
+    tittel: rad.tittel,
+    dato: rad.dato,
+  }));
+}
+
 export async function slettArbeidshendelse(prisma: PrismaClient, id: number): Promise<void> {
   if (!Number.isInteger(id) || id <= 0) {
     throw new Error(ARBEIDSHENDELSE_FEIL);
